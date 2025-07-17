@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>NUEVEDIECISEIS • Carpeta Digital</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #fcfcfc; }
+    h2 { color: #333; }
+    .panel { background: #eef; padding: 15px; border-radius: 10px; }
+    .cronometro { font-weight: bold; color: #007700; font-size: 1.2em; }
+  </style>
+</head>
+<body>
+
+<h2>📁 Carpeta escaneada</h2>
+<div class="panel" id="info"></div>
+
+<script>
+  function iniciarCronometro(inicio) {
+    function actualizar() {
+      const delta = Math.floor((Date.now() - inicio) / 1000);
+      const hh = String(Math.floor(delta / 3600)).padStart(2, '0');
+      const mm = String(Math.floor((delta % 3600) / 60)).padStart(2, '0');
+      const ss = String(delta % 60).padStart(2, '0');
+      document.getElementById("cronometro").textContent = `${hh}:${mm}:${ss}`;
+    }
+    setInterval(actualizar, 1000);
+    actualizar();
+  }
+
+  const id = new URLSearchParams(location.search).get("id");
+  const datos = JSON.parse(localStorage.getItem(id));
+
+  if (!datos) {
+    document.getElementById("info").innerHTML = "<p>❌ Carpeta no encontrada.</p>";
+  } else {
+    document.getElementById("info").innerHTML = `
+      <p><strong>Equipo:</strong> ${datos.equipo}</p>
+      <p><strong>Interno:</strong> ${datos.interno}</p>
+      <p><strong>Modelo:</strong> ${datos.modelo}</p>
+      <p><strong>N° Base:</strong> ${datos.base}</p>
+      <p><strong>Horas Base:</strong> ${datos.horasBase}</p>
+      <p><strong>Servicio:</strong> ${datos.service}</p>
+      <p><strong>Horas Actuales (cronómetro):</strong> <span id="cronometro" class="cronometro">00:00:00</span></p>
+    `;
+    iniciarCronometro(datos.creado);
+  }
+</script>
+
+</body>
+</html>

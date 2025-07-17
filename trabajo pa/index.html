@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>NUEVEDIECISEIS • Registro de Equipos</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
+    h2 { display: flex; justify-content: space-between; }
+    table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 0 5px #ccc; }
+    th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: center; }
+    input { width: 90%; padding: 6px; }
+    canvas { margin-top: 5px; }
+    .carpeta { margin-top: 20px; padding: 10px; background: #eef; border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+<h2>
+  NUEVEDIECISEIS
+  <span id="reloj">Cargando hora...</span>
+</h2>
+
+<table id="tabla">
+  <tr>
+    <th>Equipo</th><th>Interno</th><th>Modelo</th><th>N° Base</th><th>Horas Base</th><th>Horas Actuales</th><th>Servicio</th><th>QR</th><th>Acción</th>
+  </tr>
+</table>
+<button onclick="agregarFila()">Agregar fila</button>
+
+<div id="carpetas"></div>
+
+<script>
+  function actualizarReloj() {
+    document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
+  }
+  setInterval(actualizarReloj, 1000);
+
+  function agregarFila() {
+    const fila = document.createElement("tr");
+    for (let i = 0; i < 7; i++) {
+      const td = document.createElement("td");
+      const input = document.createElement("input");
+      input.type = i === 4 ? "number" : "text"; // Horas Base como número
+      td.appendChild(input);
+      fila.appendChild(td);
+    }
+
+    const qrTd = document.createElement("td");
+    const qrCanvas = document.createElement("canvas");
+    qrCanvas.width = 80; qrCanvas.height = 80;
+    qrTd.appendChild(qrCanvas);
+    fila.appendChild(qrTd);
+
+    const actionTd = document.createElement("td");
+    const btn = document.createElement("button");
+    btn.textContent = "Crear carpeta";
+    btn.onclick = () => crearCarpeta(fila, qrCanvas);
+    actionTd.appendChild(btn);
+    fila.appendChild(actionTd);
+
+    document.getElementById("tabla").appendChild(fila);
+  }
+
+  function crearCarpeta(fila, qrCanvas) {
+    const inputs = fila.querySelectorAll("input");
+    const valores = [...inputs].map(input => input.value.trim());
+    const id = `carpeta_${valores[3]}_${Date.now()}`;
+    const inicio = Date.now();
+
+    // Guardamos en localStorage
+    localStorage.setItem(id, JSON.stringify({
+      equipo: valores[0], interno: valores[1], modelo: valores[2],
+      base: valores[3], horasBase: valores[4], servicio: valores[6],
+      creado: inicio
+    }));
+
+    const url = `view.html?id=${encodeURIComponent(id)}`;
+    new QRious({ element: qrCanvas, value: url, size: 80 });
+
+    const div = document.createElement("div");
+    div.className = "carpeta";
+    div.innerHTML = `<h3>📁 Carpeta creada: ${id}</h3><p><strong>QR:</strong></p>`;
+    div.appendChild(qrCanvas);
+    document.getElementById("carpetas").appendChild(div);
+  }
+</script>
+
+</body>
+</html>

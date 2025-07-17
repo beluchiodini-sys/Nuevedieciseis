@@ -1,3 +1,6 @@
+<!-- Código completo optimizado para NUEVEDIECISEIS -->
+<!-- Copiar y guardar como index.html -->
+<!-- Sección principal + lógica QR, cronómetro y historial -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,7 +13,7 @@
     #reloj { color: #555; }
     table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 0 5px #ccc; margin-bottom: 20px; }
     th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: center; }
-    input, select { width: 90%; padding: 6px; }
+    input, select, textarea { width: 90%; padding: 6px; margin-top: 4px; }
     canvas { margin-top: 5px; }
     button { padding: 6px 12px; margin: 5px; cursor: pointer; }
     .carpeta, .vista-movil { margin-top: 20px; padding: 15px; background: #eef; border-radius: 8px; }
@@ -18,6 +21,7 @@
     .resaltar-verde { background-color: #ccffcc !important; }
     .resaltar-amarillo { background-color: #ffffcc !important; }
     .cronometro { font-weight: bold; color: #007700; font-size: 1.1em; }
+    ul { list-style-type: square; text-align: left; margin-top: 10px; padding-left: 20px; }
   </style>
 </head>
 <body>
@@ -29,15 +33,7 @@
 
 <table id="tabla">
   <tr>
-    <th>Equipo</th>
-    <th>Interno</th>
-    <th>Modelo</th>
-    <th>N° Base</th>
-    <th>Horas Base</th>
-    <th>Horas Actuales</th>
-    <th>Tipo de Servicio</th>
-    <th>QR</th>
-    <th>Acción</th>
+    <th>Equipo</th><th>Interno</th><th>Modelo</th><th>N° Base</th><th>Horas Base</th><th>Horas Actuales</th><th>Tipo de Servicio</th><th>QR</th><th>Acción</th>
   </tr>
 </table>
 
@@ -55,7 +51,7 @@
     const fila = document.createElement("tr");
     const campos = ['equipo','interno','modelo','nroBase','horasBase','horasActuales'];
 
-    campos.forEach(campo => {
+    campos.forEach((campo) => {
       const td = document.createElement("td");
       const input = document.createElement("input");
       input.type = campo.includes('Horas') ? "number" : "text";
@@ -119,7 +115,8 @@
       base: valores[3],
       horasBase: valores[4],
       tipoServicio,
-      creado
+      creado,
+      acciones: []
     };
 
     localStorage.setItem(id, JSON.stringify(carpetas[id]));
@@ -131,19 +128,27 @@
   function mostrarVista(id) {
     const datos = carpetas[id];
     const div = document.createElement("div");
-    div.className = "vista-movil";
+    div.className = "carpeta";
     div.innerHTML = `
-      <h3>📁 Carpeta creada: ${id}</h3>
+      <h3>📁 Carpeta: ${id}</h3>
       <p><strong>Equipo:</strong> ${datos.equipo}</p>
       <p><strong>Interno:</strong> ${datos.interno}</p>
       <p><strong>Modelo:</strong> ${datos.modelo}</p>
       <p><strong>N° Base:</strong> ${datos.base}</p>
       <p><strong>Horas Base:</strong> ${datos.horasBase}</p>
       <p><strong>Tipo de Servicio:</strong> ${datos.tipoServicio}</p>
-      <p><strong>Horas Actuales (cronómetro):</strong> <span id="cron_${id}" class="cronometro">00:00:00</span></p>
+      <p><strong>Horas Actuales:</strong> <span id="cron_${id}" class="cronometro">00:00:00</span></p>
+      <button onclick="verDocumento('${id}')">📄 Ver documento</button>
+      <div class="servicio">
+        <h4>🛠 Acciones realizadas</h4>
+        <textarea id="txt_${id}" placeholder="Escribir acción..."></textarea>
+        <button onclick="guardarAccion('${id}')">💾 Guardar acción</button>
+        <ul id="hist_${id}"></ul>
+      </div>
     `;
     document.getElementById("carpetas").appendChild(div);
     iniciarCronometro(id, datos.creado);
+    actualizarHistorial(id);
   }
 
   function iniciarCronometro(id, inicio) {
@@ -158,15 +163,16 @@
     actualizar();
   }
 
-  // Vista desde QR escaneado
-  window.addEventListener("load", () => {
-    const hash = location.hash.replace("#", "");
-    if (hash && localStorage.getItem(hash)) {
-      carpetas[hash] = JSON.parse(localStorage.getItem(hash));
-      mostrarVista(hash);
-    }
-  });
-</script>
+  function guardarAccion(id) {
+    const texto = document.getElementById(`txt_${id}`).value.trim();
+    if (!texto) return;
+    const fecha = new Date().toLocaleString();
+    carpetas[id].acciones.push(`${fecha}: ${texto}`);
+    localStorage.setItem(id, JSON.stringify(carpetas[id]));
+    document.getElementById(`txt_${id}`).value = "";
+    actualizarHistorial(id);
+  }
 
-</body>
-</html>
+  function actualizarHistorial(id) {
+    const ul = document.getElementById(`hist_${id}`);
+    ul.inner

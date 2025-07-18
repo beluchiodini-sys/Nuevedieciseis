@@ -18,23 +18,7 @@
     .resaltar-rojo { background-color: #ffcccc !important; }
     .resaltar-verde { background-color: #ccffcc !important; }
     .resaltar-amarillo { background-color: #ffffcc !important; }
-  </style>
-</head>
-<body>
-
-<h2>NUEVEDIECISEIS <span id="reloj">⏱️</span></h2>
-
-<table id="tabla">
-  <tr>
-    <th>Equipo</th><th>Interno</th><th>Modelo</th><th>N° Base</th>
-    <th>Horas Base</th><th>Horas Actuales</th><th>Servicio</th><th>QR</th><th>Acción</th>
-  </tr>
-</table>
-
-<button onclick="agregarFila()">Agregar fila</button>
-<div id="carpetas"></div>
-
-<script>
+  <script>
 const carpetas = {};
 
 setInterval(() => {
@@ -179,4 +163,51 @@ function guardarAccion(id) {
   const txt = document.getElementById(`txt_${id}`).value.trim();
   if (!txt) return;
   const fecha = new Date().toLocaleString();
-  carpetas[id].acciones.push(`${fecha}: ${
+  carpetas[id].acciones.push(`${fecha}: ${txt}`);
+  localStorage.setItem(id, JSON.stringify(carpetas[id]));
+  document.getElementById(`txt_${id}`).value = "";
+  actualizarHistorial(id);
+}
+
+function actualizarHistorial(id) {
+  const ul = document.getElementById(`hist_${id}`);
+  ul.innerHTML = "";
+  carpetas[id].acciones.forEach((accion, i) => {
+    const li = document.createElement("li");
+    li.textContent = accion;
+    const btn = document.createElement("button");
+    btn.textContent = "🗑️";
+    btn.onclick = () => {
+      carpetas[id].acciones.splice(i, 1);
+      localStorage.setItem(id, JSON.stringify(carpetas[id]));
+      actualizarHistorial(id);
+    };
+    li.appendChild(btn);
+    ul.appendChild(li);
+  });
+}
+
+function descargarDocumento(id) {
+  const datos = carpetas[id];
+  let texto = `📄 Carpeta: ${id}\n`;
+  texto += `Equipo: ${datos.equipo}\nInterno: ${datos.interno}\nModelo: ${datos.modelo}\n`;
+  texto += `N° Base: ${datos.base}\nHoras Base: ${datos.horasBase}\nServicio: ${datos.servicio}\n\n`;
+  texto += `🛠 Acciones realizadas:\n`;
+  datos.acciones.forEach(a => texto += `• ${a}\n`);
+  const blob = new Blob([texto], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `${id}.txt`;
+  link.click();
+}
+
+window.addEventListener("load", () => {
+  const hash = location.hash.replace("#","");
+  if (hash && localStorage.getItem(hash)) {
+    carpetas[hash] = JSON.parse(localStorage.getItem(hash));
+    mostrarCarpeta(hash);
+  }
+});
+</script>
+</body>
+</html>

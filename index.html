@@ -33,7 +33,7 @@
 <button onclick="agregarFila()">Agregar fila</button>
 <div id="carpetas"></div>
 
-  <script>
+<script>
 const carpetas = {};
 
 setInterval(() => {
@@ -194,35 +194,4 @@ function actualizarHistorial(id) {
     btn.textContent = "🗑️";
     btn.onclick = () => {
       carpetas[id].acciones.splice(i, 1);
-      localStorage.setItem(id, JSON.stringify(carpetas[id]));
-      actualizarHistorial(id);
-    };
-    li.appendChild(btn);
-    ul.appendChild(li);
-  });
-}
-
-function descargarDocumento(id) {
-  const datos = carpetas[id];
-  let texto = `📄 Carpeta: ${id}\n`;
-  texto += `Equipo: ${datos.equipo}\nInterno: ${datos.interno}\nModelo: ${datos.modelo}\n`;
-  texto += `N° Base: ${datos.base}\nHoras Base: ${datos.horasBase}\nServicio: ${datos.servicio}\n\n`;
-  texto += `🛠 Acciones realizadas:\n`;
-  datos.acciones.forEach(a => texto += `• ${a}\n`);
-  const blob = new Blob([texto], { type: "text/plain" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `${id}.txt`;
-  link.click();
-}
-
-window.addEventListener("load", () => {
-  const hash = location.hash.replace("#","");
-  if (hash && localStorage.getItem(hash)) {
-    carpetas[hash] = JSON.parse(localStorage.getItem(hash));
-    mostrarCarpeta(hash);
-  }
-});
-</script>
-</body>
-</html>
+      localStorage.setItem(id,

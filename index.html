@@ -41,19 +41,27 @@ setInterval(() => {
 
 function agregarFila() {
   const fila = document.createElement("tr");
-  for (let i = 0; i < 7; i++) {
+  const campos = ['equipo','interno','modelo','nroBase','horasBase','horasActuales'];
+  campos.forEach(campo => {
     const td = document.createElement("td");
-    const input = (i === 6) ? document.createElement("select") : document.createElement("input");
-    if (i === 4 || i === 5) input.type = "number";
-    if (i === 6) ["Mantenimiento","Reparación","Inspección","Instalación"].forEach(op => {
-      const option = document.createElement("option");
-      option.value = op;
-      option.textContent = op;
-      input.appendChild(option);
-    });
+    const input = document.createElement("input");
+    input.type = campo.includes('Horas') ? "number" : "text";
+    if (campo === 'horasBase') {
+      input.addEventListener("input", () => verificarColor(input));
+    }
     td.appendChild(input);
     fila.appendChild(td);
-  }
+  });
+
+  const servicioTd = document.createElement("td");
+  const select = document.createElement("select");
+  ['Mantenimiento','Reparación','Inspección','Instalación'].forEach(tipo => {
+    const opt = document.createElement("option");
+    opt.text = tipo;
+    select.add(opt);
+  });
+  servicioTd.appendChild(select);
+  fila.appendChild(servicioTd);
 
   const qrTd = document.createElement("td");
   const canvas = document.createElement("canvas");
@@ -62,32 +70,49 @@ function agregarFila() {
   qrTd.appendChild(canvas);
   fila.appendChild(qrTd);
 
-  const accionTd = document.createElement("td");
+  const btnTd = document.createElement("td");
   const btn = document.createElement("button");
   btn.textContent = "Crear carpeta";
   btn.onclick = () => crearCarpeta(fila, canvas);
-  accionTd.appendChild(btn);
-  fila.appendChild(accionTd);
+  btnTd.appendChild(btn);
+  fila.appendChild(btnTd);
 
   document.getElementById("tabla").appendChild(fila);
 }
 
+function verificarColor(input) {
+  const val = parseInt(input.value);
+  const celda = input.parentElement;
+  celda.className = "";
+  if (!isNaN(val)) {
+    if (val >= 200 && val <= 250) celda.classList.add("resaltar-rojo");
+    else if (val >= 950 && val <= 1000) celda.classList.add("resaltar-verde");
+    else if (val >= 1950 && val <= 2000) celda.classList.add("resaltar-amarillo");
+  }
+}
+
 function crearCarpeta(fila, canvas) {
-  const inputs = fila.querySelectorAll("input, select");
+  const inputs = fila.querySelectorAll("input");
+  const select = fila.querySelector("select");
   const valores = [...inputs].map(i => i.value.trim());
+  const tipoServicio = select.value;
   const id = `carpeta_${valores[3]}_${Date.now()}`;
   const creado = Date.now();
 
   carpetas[id] = {
-    equipo: valores[0], interno: valores[1], modelo: valores[2],
-    base: valores[3], horasBase: valores[4], servicio: valores[6],
-    creado, acciones: []
+    equipo: valores[0],
+    interno: valores[1],
+    modelo: valores[2],
+    base: valores[3],
+    horasBase: valores[4],
+    servicio: tipoServicio,
+    creado,
+    acciones: []
   };
-  localStorage.setItem(id, JSON.stringify(carpetas[id]));
 
+  localStorage.setItem(id, JSON.stringify(carpetas[id]));
   const url = location.href + `#${encodeURIComponent(id)}`;
   new QRious({ element: canvas, value: url, size: 80 });
-
   mostrarCarpeta(id);
 }
 
@@ -156,27 +181,4 @@ function descargarDocumento(id) {
   const datos = carpetas[id];
   let texto = `📄 Carpeta: ${id}\n`;
   texto += `Equipo: ${datos.equipo}\nInterno: ${datos.interno}\nModelo: ${datos.modelo}\n`;
-  texto += `N° Base: ${datos.base}\nHoras Base: ${datos.horasBase}\nServicio: ${datos.servicio}\n\n`;
-  texto += `🛠 Acciones realizadas:\n`;
-  datos.acciones.forEach((accion, i) => {
-    texto += `• ${accion}\n`;
-  });
-  const blob = new Blob([texto], { type: "text/plain" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `${id}.txt`;
-  link.click();
-}
-
-// Recuperar carpeta desde QR
-window.addEventListener("load", () => {
-  const hash = location.hash.replace("#","");
-  if (hash && localStorage.getItem(hash)) {
-    carpetas[hash] = JSON.parse(localStorage.getItem(hash));
-    mostrarCarpeta(hash);
-  }
-});
-</script>
-
-</body>
-</html>
+  texto += `N° Base: ${

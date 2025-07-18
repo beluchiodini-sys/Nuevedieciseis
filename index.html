@@ -55,7 +55,7 @@ function agregarFila() {
 
   const servicioTd = document.createElement("td");
   const select = document.createElement("select");
-  ['Mantenimiento','Reparación','Inspección','Instalación'].forEach(tipo => {
+  ['Motor','Transmisión','Hidráulico','Otro'].forEach(tipo => {
     const opt = document.createElement("option");
     opt.text = tipo;
     select.add(opt);
@@ -84,10 +84,45 @@ function verificarColor(input) {
   const val = parseInt(input.value);
   const celda = input.parentElement;
   celda.className = "";
+  const fila = celda.parentElement;
+  const selectServicio = fila.querySelector("select");
+  const idServicio = selectServicio.value;
+  const hora = new Date().toLocaleTimeString();
+
   if (!isNaN(val)) {
-    if (val >= 200 && val <= 250) celda.classList.add("resaltar-rojo");
-    else if (val >= 950 && val <= 1000) celda.classList.add("resaltar-verde");
-    else if (val >= 1950 && val <= 2000) celda.classList.add("resaltar-amarillo");
+    if (val >= 200 && val <= 250) {
+      celda.classList.add("resaltar-rojo");
+      selectServicio.value = "Motor";
+      registrarCambioAutomático(fila, `Estado ROJO: Motor`, hora);
+    }
+    else if (val >= 950 && val <= 1000) {
+      celda.classList.add("resaltar-verde");
+      selectServicio.value = "Transmisión";
+      registrarCambioAutomático(fila, `Estado VERDE: Transmisión`, hora);
+    }
+    else if (val >= 1950 && val <= 2000) {
+      celda.classList.add("resaltar-amarillo");
+      selectServicio.value = "Hidráulico";
+      registrarCambioAutomático(fila, `Estado AMARILLO: Hidráulico`, hora);
+    }
+  }
+}
+
+function registrarCambioAutomático(fila, texto, hora) {
+  const btn = fila.querySelector("button");
+  if (!btn || !btn.onclick) return;
+  const id = btn.onclick.toString().match(/crearCarpeta\(.*?,.*?\);.*?carpetas
+
+\['(.+?)'\]
+
+/)?.[1];
+  const manual = btn.getAttribute("data-id");
+  const idExtra = manual || Object.keys(carpetas).slice(-1)[0];
+  if (carpetas[idExtra]) {
+    const log = `📌 ${hora} — ${texto}`;
+    carpetas[idExtra].acciones.push(log);
+    localStorage.setItem(idExtra, JSON.stringify(carpetas[idExtra]));
+    actualizarHistorial(idExtra);
   }
 }
 
@@ -143,42 +178,4 @@ function iniciarCronometro(id, inicio) {
   setInterval(() => {
     const delta = Math.floor((Date.now() - inicio)/1000);
     const hh = String(Math.floor(delta/3600)).padStart(2,'0');
-    const mm = String(Math.floor((delta%3600)/60)).padStart(2,'0');
-    const ss = String(delta%60).padStart(2,'0');
-    document.getElementById(`cron_${id}`).textContent = `${hh}:${mm}:${ss}`;
-  }, 1000);
-}
-
-function guardarAccion(id) {
-  const txt = document.getElementById(`txt_${id}`).value.trim();
-  if (!txt) return;
-  const fecha = new Date().toLocaleString();
-  carpetas[id].acciones.push(`${fecha}: ${txt}`);
-  localStorage.setItem(id, JSON.stringify(carpetas[id]));
-  document.getElementById(`txt_${id}`).value = "";
-  actualizarHistorial(id);
-}
-
-function actualizarHistorial(id) {
-  const ul = document.getElementById(`hist_${id}`);
-  ul.innerHTML = "";
-  carpetas[id].acciones.forEach((accion, i) => {
-    const li = document.createElement("li");
-    li.textContent = accion;
-    const btn = document.createElement("button");
-    btn.textContent = "🗑️";
-    btn.onclick = () => {
-      carpetas[id].acciones.splice(i, 1);
-      localStorage.setItem(id, JSON.stringify(carpetas[id]));
-      actualizarHistorial(id);
-    };
-    li.appendChild(btn);
-    ul.appendChild(li);
-  });
-}
-
-function descargarDocumento(id) {
-  const datos = carpetas[id];
-  let texto = `📄 Carpeta: ${id}\n`;
-  texto += `Equipo: ${datos.equipo}\nInterno: ${datos.interno}\nModelo: ${datos.modelo}\n`;
-  texto += `N° Base: ${
+    const mm = String(Math.floor((delta%

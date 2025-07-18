@@ -18,6 +18,21 @@
     .resaltar-rojo { background-color: #ffcccc !important; }
     .resaltar-verde { background-color: #ccffcc !important; }
     .resaltar-amarillo { background-color: #ffffcc !important; }
+  </style>
+</head>
+<body>
+
+<h2>NUEVEDIECISEIS <span id="reloj">⏱</span></h2>
+
+<table id="tabla">
+  <tr>
+    <th>Equipo</th><th>Interno</th><th>Modelo</th><th>N° Base</th>
+    <th>Horas Base</th><th>Horas Actuales</th><th>Servicio</th><th>QR</th><th>Acción</th>
+  </tr>
+</table>
+<button onclick="agregarFila()">Agregar fila</button>
+<div id="carpetas"></div>
+
   <script>
 const carpetas = {};
 

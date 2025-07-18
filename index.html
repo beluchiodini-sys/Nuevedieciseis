@@ -187,22 +187,5 @@ function guardarAccion(id) {
 function actualizarHistorial(id) {
   const ul = document.getElementById(`hist_${id}`);
   ul.innerHTML = "";
-  carpetas[id].acciones.forEach((accion, i) => {
-    const li = document.createElement("li");
-    li.textContent = accion;
-    const btn = document.createElement("button");
-    btn.textContent = "🗑️";
-    btn.onclick = () => {
-      carpetas[id].acciones.splice(i, 1);
-      localStorage.setItem(id);
-
-      window.addEventListener("load", () => {
-  Object.keys(localStorage).forEach(key => {
-    if (key.startsWith("carpeta_")) {
-      const datos = JSON.parse(localStorage.getItem(key));
-      carpetas[key] = datos;
-      mostrarCarpeta(key);
-    }
-  });
-});
+  carpetas[id].acciones.forEach((accion, i) =>
 

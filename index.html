@@ -194,8 +194,9 @@ function actualizarHistorial(id) {
     btn.textContent = "🗑️";
     btn.onclick = () => {
       carpetas[id].acciones.splice(i, 1);
-      localStorage.setItem(id,
-window.addEventListener("load", () => {
+      localStorage.setItem(id);
+
+      window.addEventListener("load", () => {
   Object.keys(localStorage).forEach(key => {
     if (key.startsWith("carpeta_")) {
       const datos = JSON.parse(localStorage.getItem(key));
@@ -204,3 +205,4 @@ window.addEventListener("load", () => {
     }
   });
 });
+

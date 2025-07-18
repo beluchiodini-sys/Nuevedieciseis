@@ -10,8 +10,8 @@
     table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 0 5px #ccc; }
     th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: center; }
     input, select, textarea { width: 90%; padding: 6px; margin-top: 4px; }
-    canvas { margin-top: 5px; }
     button { padding: 6px 12px; margin: 5px; cursor: pointer; }
+    canvas { margin-top: 5px; }
     .carpeta { margin-top: 20px; padding: 15px; background: #eef; border-radius: 8px; }
     .cronometro { font-weight: bold; color: #007700; font-size: 1.1em; }
     .resaltar-rojo { background-color: #ffcccc !important; }
@@ -21,7 +21,6 @@
 </head>
 <body>
   <h2>NUEVEDIECISEIS <span id="reloj">⏱</span></h2>
-
   <table id="tabla">
     <tr>
       <th>Equipo</th><th>Interno</th><th>Modelo</th><th>N° Base</th>
@@ -153,6 +152,7 @@
         <textarea id="txt_${id}" placeholder="Escribir acción..."></textarea>
         <button onclick="guardarAccion('${id}')">💾 Guardar acción</button>
         <button onclick="descargarDocumento('${id}')">📥 Descargar documento</button>
+        <button onclick="eliminarCarpeta('${id}')">🗑️ Eliminar carpeta</button>
         <ul id="hist_${id}"></ul>
       `;
       document.getElementById("carpetas").appendChild(div);
@@ -168,12 +168,66 @@
         const ss = String(delta % 60).padStart(2, '0');
         document.getElementById(`cron_${id}`).textContent = `${hh}:${mm}:${ss}`;
       }, 1000);
-    }
-
-    function guardarAccion(id) {
-      const txt = document.getElementById(`txt_${id}`).value.trim();
-      if (!txt) return;
-      const fecha = new Date().toLocaleString();
+        
       carpetas[id].acciones.push(`${fecha}: ${txt}`);
       localStorage.setItem(id, JSON.stringify(carpetas[id]));
-      document.getElementById(`txt_${id
+      document.getElementById(`txt_${id}`).value = "";
+      actualizarHistorial(id);
+    }
+
+
+    function actualizarHistorial(id) {
+      const ul = document.getElementById(`hist_${id}`);
+      ul.innerHTML = "";
+      carpetas[id].acciones.forEach((accion, i) => {
+        const li = document.createElement("li");
+        li.textContent = accion;
+
+        const btnBorrar = document.createElement("button");
+        btnBorrar.textContent = "🗑️";
+        btnBorrar.onclick = () => {
+          carpetas[id].acciones.splice(i, 1);
+          localStorage.setItem(id, JSON.stringify(carpetas[id]));
+          actualizarHistorial(id);
+        };
+
+        li.appendChild(btnBorrar);
+        ul.appendChild(li);
+      });
+    }
+
+    function descargarDocumento(id) {
+      const datos = carpetas[id];
+      let contenido = `Carpeta: ${id}\n`;
+      contenido += `Equipo: ${datos.equipo}\nInterno: ${datos.interno}\nModelo: ${datos.modelo}\n`;
+      contenido += `N° Base: ${datos.base}\nHoras Base: ${datos.horasBase}\nServicio: ${datos.servicio}\n\nAcciones:\n`;
+      datos.acciones.forEach(accion => contenido += `- ${accion}\n`);
+
+      const blob = new Blob([contenido], { type: 'text/plain' });
+      const enlace = document.createElement("a");
+      enlace.href = URL.createObjectURL(blob);
+      enlace.download = `${id}.txt`;
+      enlace.click();
+    }
+
+    function eliminarCarpeta(id) {
+      localStorage.removeItem(id);
+      delete carpetas[id];
+      const divs = document.querySelectorAll(".carpeta");
+      divs.forEach(div => {
+        if (div.innerHTML.includes(id)) div.remove();
+      });
+    }
+
+    window.addEventListener("load", () => {
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith("carpeta_")) {
+          const datos = JSON.parse(localStorage.getItem(key));
+          carpetas[key] = datos;
+          mostrarCarpeta(key);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

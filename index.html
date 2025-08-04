@@ -91,20 +91,20 @@
         if (val >= 200 && val <= 250) {
           td.classList.add("resaltar-rojo");
           select.value = "Motor";
-          mensaje = Estado ROJO: Motor;
+          mensaje = "Estado ROJO: Motor";
         } else if (val >= 950 && val <= 1000) {
           td.classList.add("resaltar-verde");
           select.value = "Transmisión";
-          mensaje = Estado VERDE: Transmisión;
+          mensaje = "Estado VERDE: Transmisión";
         } else if (val >= 1950 && val <= 2000) {
           td.classList.add("resaltar-amarillo");
           select.value = "Hidráulico";
-          mensaje = Estado AMARILLO: Hidráulico;
+          mensaje = "Estado AMARILLO: Hidráulico";
         }
 
         const id = Object.keys(carpetas).slice(-1)[0];
         if (id && carpetas[id]) {
-          carpetas[id].acciones.push(📌 ${hora} — ${mensaje});
+          carpetas[id].acciones.push(`📌 ${hora} — ${mensaje}`);
           localStorage.setItem(id, JSON.stringify(carpetas[id]));
           actualizarHistorial(id);
         }
@@ -116,7 +116,7 @@
       const select = fila.querySelector("select");
       const valores = [...inputs].map(i => i.value.trim());
       const tipoServicio = select.value;
-      const id = carpeta_${valores[3]}_${Date.now()};
+      const id = `carpeta_${valores[3]}_${Date.now()}`;
       const creado = Date.now();
 
       carpetas[id] = {
@@ -131,7 +131,7 @@
       };
 
       localStorage.setItem(id, JSON.stringify(carpetas[id]));
-      const url = location.href.split("#")[0] + #${encodeURIComponent(id)};
+      const url = location.href.split("#")[0] + `#${encodeURIComponent(id)}`;
       new QRious({ element: canvas, value: url, size: 80 });
       mostrarCarpeta(id);
     }
@@ -140,7 +140,7 @@
       const datos = carpetas[id];
       const div = document.createElement("div");
       div.className = "carpeta";
-      div.innerHTML = 
+      div.innerHTML = `
         <h3>📁 Carpeta: ${id}</h3>
         <p><strong>Equipo:</strong> ${datos.equipo}</p>
         <p><strong>Interno:</strong> ${datos.interno}</p>
@@ -154,7 +154,7 @@
         <button onclick="descargarDocumento('${id}')">📥 Descargar documento</button>
         <button onclick="eliminarCarpeta('${id}')">🗑️ Eliminar carpeta</button>
         <ul id="hist_${id}"></ul>
-      ;
+      `;
       document.getElementById("carpetas").appendChild(div);
       iniciarCronometro(id, datos.creado);
       actualizarHistorial(id);
@@ -163,7 +163,7 @@
     function iniciarCronometro(id, inicio) {
       if (cronometrosActivos[id]) clearInterval(cronometrosActivos[id]);
 
-      const cronEl = document.getElementById(cron_${id});
+      const cronEl = document.getElementById(`cron_${id}`);
       if (!cronEl) return;
 
       cronometrosActivos[id] = setInterval(() => {
@@ -171,22 +171,22 @@
         const hh = String(Math.floor(delta / 3600)).padStart(2, '0');
         const mm = String(Math.floor((delta % 3600) / 60)).padStart(2, '0');
         const ss = String(delta % 60).padStart(2, '0');
-        cronEl.textContent = ${hh}:${mm}:${ss};
+        cronEl.textContent = `${hh}:${mm}:${ss}`;
       }, 1000);
     }
 
     function guardarAccion(id) {
-      const txt = document.getElementById(txt_${id}).value.trim();
+      const txt = document.getElementById(`txt_${id}`).value.trim();
       if (!txt) return;
       const fecha = new Date().toLocaleString();
-      carpetas[id].acciones.push(${fecha}: ${txt});
+      carpetas[id].acciones.push(`${fecha}: ${txt}`);
       localStorage.setItem(id, JSON.stringify(carpetas[id]));
-            document.getElementById(txt_${id}).value = "";
+      document.getElementById(`txt_${id}`).value = "";
       actualizarHistorial(id);
     }
 
     function actualizarHistorial(id) {
-      const ul = document.getElementById(hist_${id});
+      const ul = document.getElementById(`hist_${id}`);
       ul.innerHTML = "";
       carpetas[id].acciones.forEach((accion, i) => {
         const li = document.createElement("li");
@@ -207,15 +207,15 @@
 
     function descargarDocumento(id) {
       const datos = carpetas[id];
-      let contenido = Carpeta: ${id}\n;
-      contenido += Equipo: ${datos.equipo}\nInterno: ${datos.interno}\nModelo: ${datos.modelo}\n;
-      contenido += N° Base: ${datos.base}\nHoras Base: ${datos.horasBase}\nServicio: ${datos.servicio}\n\nAcciones:\n;
-      datos.acciones.forEach(accion => contenido += - ${accion}\n);
+      let contenido = `Carpeta: ${id}\n`;
+      contenido += `Equipo: ${datos.equipo}\nInterno: ${datos.interno}\nModelo: ${datos.modelo}\n`;
+      contenido += `N° Base: ${datos.base}\nHoras Base: ${datos.horasBase}\nServicio: ${datos.servicio}\n\nAcciones:\n`;
+      datos.acciones.forEach(accion => contenido += `- ${accion}\n`);
 
       const blob = new Blob([contenido], { type: 'text/plain' });
       const enlace = document.createElement("a");
       enlace.href = URL.createObjectURL(blob);
-      enlace.download = ${id}.txt;
+      enlace.download = `${id}.txt`;
       enlace.click();
     }
 

@@ -77,81 +77,7 @@
     const carpetas = {};
     const cronometrosActivos = {};
 
-    const fichaOriginal = `RIGA 4742 ESTACION FLORES CORDOBA\n\nCP. :5000\nTEL. 3517726146\nCRISTIAN TABORDA@NUEVEDIECISEIS.COM.AR\n\nPLANILLA TÉCNICA\n\nEMPRESA:\nEQUIPO:\t\t\t\t\t\t\t\t\t\tINTERNO:\nMARCA MODELO:\t\t\t\t\t\t\t\t\tPATENTE:\nHORAS/KM:\nN. DE SERIE:\n\nMOTOR\nITEM\tDESCRIPCIÓN\tMARCA/MODELO\tCANTIDAD\n1\tACEITE\t\t\t\n2\tFILTRO ACEITE\t\t\t\n3\tFILTRO COMBUSTIBLE\t\t\t\n4\tFILTRO COMBUSTIBLE\t\t\t\n5\tFILTRO DE AIRE\t\t\t\n6\tFILTRO DE AIRE\t\t\t\n7\tCORREAS\t\t\t\n8\tREFRIGERANTE\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n10				
-
-TRANSMISIÓN
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
-
-HIDRÁULICO
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
-
-NEUMÁTICO
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
-
-ELÉCTRICO
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
-
-TREN RODANTE
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
-
-ELEMENTOS DE DESGASTE
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
-
-CABINA`;
+    const fichaOriginal = `RIGA 4742 ESTACION FLORES CORDOBA\n\nCP. :5000\nTEL. 3517726146\nCRISTIAN TABORDA@NUEVEDIECISEIS.COM.AR\n\nPLANILLA TÉCNICA\n\nEMPRESA:\nEQUIPO:\t\t\t\t\t\t\t\t\t\tINTERNO:\nMARCA MODELO:\t\t\t\t\t\t\t\t\tPATENTE:\nHORAS/KM:\nN. DE SERIE:\n\nMOTOR\nITEM\tDESCRIPCIÓN\tMARCA/MODELO\tCANTIDAD\n1\tACEITE\t\t\t\n2\tFILTRO ACEITE\t\t\t\n3\tFILTRO COMBUSTIBLE\t\t\t\n4\tFILTRO COMBUSTIBLE\t\t\t\n5\tFILTRO DE AIRE\t\t\t\n6\tFILTRO DE AIRE\t\t\t\n7\tCORREAS\t\t\t\n8\tREFRIGERANTE\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n... (continúa)`;
 
     function crearCarpetaDesdeFormulario() {
       const equipo = document.getElementById('equipo').value;
@@ -162,7 +88,7 @@ CABINA`;
       const serie = document.getElementById('serie').value;
       const empresa = document.getElementById('empresa').value;
       const tipoServicio = document.getElementById('servicio').value;
-      const id = `carpeta_${equipo.replace(/\s+/g, '_')}_${Date.now()}`;
+      const id = `carpeta_${base}_${Date.now()}`;
       const creado = Date.now();
 
       carpetas[id] = {
@@ -184,19 +110,31 @@ CABINA`;
     }
 
     function mostrarCarpeta(id) {
+      const url = location.href.split("#")[0] + `#${encodeURIComponent(id)}`;
       const datos = carpetas[id];
       document.title = datos.equipo;
       const div = document.createElement("div");
       div.className = "carpeta";
       div.innerHTML = `
         <h3>📁 Carpeta: ${datos.equipo}</h3>
+        <canvas id="qr_${id}" width="100" height="100"></canvas>
+        <p><strong>EMPRESA:</strong> ${datos.empresa}</p>
+        <p><strong>EQUIPO:</strong> ${datos.equipo}</p>
+        <p><strong>INTERNO:</strong> ${datos.interno}</p>
+        <p><strong>MARCA MODELO:</strong> ${datos.modelo}</p>
+        <p><strong>PATENTE (N° BASE):</strong> ${datos.base}</p>
+        <p><strong>HORAS/KM:</strong> ${datos.horasBase}</p>
+        <p><strong>N. DE SERIE:</strong> ${datos.serie}</p>
+        <p><strong>SERVICIO:</strong> ${datos.servicio}</p>
+        <p><strong>TIEMPO ACTUAL:</strong> <span id="cron_${id}" class="cronometro">00:00:00</span></p>
         <textarea id="txt_${id}" placeholder="Escribir acción..."></textarea>
         <button onclick="guardarAccion('${id}')">💾 Guardar acción</button>
         <button onclick="descargarDocumento('${id}')">📥 Descargar documento</button>
+        <button onclick="descargarQR('${id}')">📷 Descargar QR</button>
         <button onclick="eliminarCarpeta('${id}')">🗑️ Eliminar carpeta</button>
         <ul id="hist_${id}"></ul>
-        <textarea id="ficha_${id}" class="editable-area" onchange="guardarFicha('${id}')">${datos.fichaEditable}</textarea>
-      `;
+        <textarea id="ficha_${id}" class="editable-area" onchange="guardarFicha('${id}')">${datos.fichaEditable}</textarea>`;
+      new QRious({ element: document.getElementById(`qr_${id}`), value: url, size: 100 });
       document.getElementById("carpetas").appendChild(div);
       iniciarCronometro(id, datos.creado);
       actualizarHistorial(id);
@@ -242,12 +180,17 @@ CABINA`;
       if (cronometrosActivos[id]) clearInterval(cronometrosActivos[id]);
       const cronEl = document.getElementById(`cron_${id}`);
       cronometrosActivos[id] = setInterval(() => {
-        const delta = Math.floor((Date.now() - inicio) / 1000);
-        const hh = String(Math.floor(delta / 3600)).padStart(2, '0');
-        const mm = String(Math.floor((delta % 3600) / 60)).padStart(2, '0');
-        const ss = String(delta % 60).padStart(2, '0');
-        cronEl.textContent = `${hh}:${mm}:${ss}`;
-      }, 1000);
+      document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
+    }, 1000);
+
+    function descargarQR(id) {
+      const canvas = document.getElementById(`qr_${id}`);
+      if (!canvas) return;
+      const enlace = document.createElement("a");
+      enlace.href = canvas.toDataURL("image/png");
+      enlace.download = `${carpetas[id].equipo}_QR.png`;
+      enlace.click();
+    }
     }
 
     function eliminarCarpeta(id) {
@@ -264,4 +207,6 @@ CABINA`;
     }, 1000);
   </script>
 </body>
+</html>
+
 </html>

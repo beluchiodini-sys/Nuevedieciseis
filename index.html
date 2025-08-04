@@ -33,6 +33,19 @@
     const carpetas = {};
     const cronometrosActivos = {};
 
+    const bibliotecaFichas = {
+      "MOTOR": ["ACEITE", "FILTRO ACEITE", "FILTRO COMBUSTIBLE", "FILTRO COMBUSTIBLE", "FILTRO DE AIRE", "FILTRO DE AIRE", "CORREAS", "REFRIGERANTE", "", ""],
+      "TRANSMISIÓN": ["", "", "", "", "", "", "", "", "", ""],
+      "HIDRÁULICO": ["", "", "", "", "", "", "", "", "", ""],
+      "NEUMÁTICO": ["", "", "", "", "", "", "", "", "", ""],
+      "ELÉCTRICO": ["", "", "", "", "", "", "", "", "", ""],
+      "TREN RODANTE": ["", "", "", "", "", "", "", "", "", ""],
+      "ELEMENTOS DE DESGASTE": ["", "", "", "", "", "", "", "", "", ""],
+      "CABINA": ["", "", "", "", "", "", "", "", "", ""],
+      "CHASIS": ["", "", "", "", "", "", "", "", "", ""],
+      "VARIOS": ["", "", "", "", "", "", "", "", "", ""]
+    };
+
     setInterval(() => {
       document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
     }, 1000);
@@ -127,7 +140,8 @@
         horasBase: valores[4],
         servicio: tipoServicio,
         creado,
-        acciones: []
+        acciones: [],
+        fichaTecnica: JSON.parse(JSON.stringify(bibliotecaFichas))
       };
 
       localStorage.setItem(id, JSON.stringify(carpetas[id]));
@@ -154,6 +168,10 @@
         <button onclick="descargarDocumento('${id}')">📥 Descargar documento</button>
         <button onclick="eliminarCarpeta('${id}')">🗑️ Eliminar carpeta</button>
         <ul id="hist_${id}"></ul>
+        <div><h4>📄 Ficha Técnica:</h4>
+          ${Object.entries(datos.fichaTecnica).map(([seccion, items]) => 
+            `<h5>${seccion}</h5><ul>${items.map((item, i) => `<li>${i + 1}. ${item || '(vacío)'}</li>`).join('')}</ul>`).join('')}
+        </div>
       `;
       document.getElementById("carpetas").appendChild(div);
       iniciarCronometro(id, datos.creado);
@@ -162,10 +180,8 @@
 
     function iniciarCronometro(id, inicio) {
       if (cronometrosActivos[id]) clearInterval(cronometrosActivos[id]);
-
       const cronEl = document.getElementById(`cron_${id}`);
       if (!cronEl) return;
-
       cronometrosActivos[id] = setInterval(() => {
         const delta = Math.floor((Date.now() - inicio) / 1000);
         const hh = String(Math.floor(delta / 3600)).padStart(2, '0');
@@ -181,7 +197,7 @@
       const fecha = new Date().toLocaleString();
       carpetas[id].acciones.push(`${fecha}: ${txt}`);
       localStorage.setItem(id, JSON.stringify(carpetas[id]));
-            document.getElementById(`txt_${id}`).value = "";
+      document.getElementById(`txt_${id}`).value = "";
       actualizarHistorial(id);
     }
 
@@ -191,7 +207,6 @@
       carpetas[id].acciones.forEach((accion, i) => {
         const li = document.createElement("li");
         li.textContent = accion;
-
         const btnBorrar = document.createElement("button");
         btnBorrar.textContent = "🗑️";
         btnBorrar.onclick = () => {
@@ -199,7 +214,6 @@
           localStorage.setItem(id, JSON.stringify(carpetas[id]));
           actualizarHistorial(id);
         };
-
         li.appendChild(btnBorrar);
         ul.appendChild(li);
       });
@@ -211,6 +225,11 @@
       contenido += `Equipo: ${datos.equipo}\nInterno: ${datos.interno}\nModelo: ${datos.modelo}\n`;
       contenido += `N° Base: ${datos.base}\nHoras Base: ${datos.horasBase}\nServicio: ${datos.servicio}\n\nAcciones:\n`;
       datos.acciones.forEach(accion => contenido += `- ${accion}\n`);
+      contenido += `\nFicha Técnica:\n`;
+      for (const [seccion, items] of Object.entries(datos.fichaTecnica)) {
+        contenido += `${seccion}:\n`;
+        items.forEach((item, i) => contenido += `  ${i + 1}. ${item || '(vacío)'}\n`);
+      }
 
       const blob = new Blob([contenido], { type: 'text/plain' });
       const enlace = document.createElement("a");
@@ -245,5 +264,7 @@
       }
     });
   </script>
+</body>
+</html>
 </body>
 </html>

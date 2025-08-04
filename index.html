@@ -31,10 +31,12 @@
 
 <script>
   const carpetas = {};
-  
-setInterval(() => {
-  document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
-}, 1000);
+  const cronometrosActivos = {};
+
+  // Reloj en el encabezado
+  setInterval(() => {
+    document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
+  }, 1000);
 
   function agregarFila() {
     const fila = document.createElement("tr");
@@ -158,23 +160,21 @@ setInterval(() => {
     iniciarCronometro(id, datos.creado);
     actualizarHistorial(id);
   }
-const cronometrosActivos = {};
 
-function iniciarCronometro(id, inicio) {
-  if (cronometrosActivos[id]) clearInterval(cronometrosActivos[id]);
+  function iniciarCronometro(id, inicio) {
+    if (cronometrosActivos[id]) clearInterval(cronometrosActivos[id]);
 
-  const cronEl = document.getElementById(`cron_${id}`);
-  if (!cronEl) return;
+    const cronEl = document.getElementById(`cron_${id}`);
+    if (!cronEl) return;
 
-  cronometrosActivos[id] = setInterval(() => {
-    const delta = Math.floor((Date.now() - inicio) / 1000);
-    const hh = String(Math.floor(delta / 3600)).padStart(2, '0');
-    const mm = String(Math.floor((delta % 3600) / 60)).padStart(2, '0');
-    const ss = String(delta % 60).padStart(2, '0');
-    cronEl.textContent = `${hh}:${mm}:${ss}`;
-  }, 1000);
-}
-
+    cronometrosActivos[id] = setInterval(() => {
+      const delta = Math.floor((Date.now() - inicio) / 1000);
+      const hh = String(Math.floor(delta / 3600)).padStart(2, '0');
+      const mm = String(Math.floor((delta % 3600) / 60)).padStart(2, '0');
+      const ss = String(delta % 60).padStart(2, '0');
+      cronEl.textContent = `${hh}:${mm}:${ss}`;
+    }, 1000);
+  }
 
   function guardarAccion(id) {
     const txt = document.getElementById(`txt_${id}`).value.trim();
@@ -183,12 +183,7 @@ function iniciarCronometro(id, inicio) {
     carpetas[id].acciones.push(`${fecha}: ${txt}`);
     localStorage.setItem(id, JSON.stringify(carpetas[id]));
     document.getElementById(`txt_${id}`).value = "";
-    actualizarHistorial(id);
-  }
-
-  }
-
-  function actualizarHistorial(id) {
+    actualizarHistorial(id function actualizarHistorial(id) {
     const ul = document.getElementById(`hist_${id}`);
     ul.innerHTML = "";
     carpetas[id].acciones.forEach((accion, i) => {
@@ -246,7 +241,4 @@ function iniciarCronometro(id, inicio) {
         }
       });
     }
-  });
-</script>
-</body>
-</html>
+  

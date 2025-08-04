@@ -158,11 +158,15 @@ setInterval(() => {
     iniciarCronometro(id, datos.creado);
     actualizarHistorial(id);
   }
+const cronometrosActivos = {};
+
 function iniciarCronometro(id, inicio) {
+  if (cronometrosActivos[id]) clearInterval(cronometrosActivos[id]);
+
   const cronEl = document.getElementById(`cron_${id}`);
   if (!cronEl) return;
 
-  setInterval(() => {
+  cronometrosActivos[id] = setInterval(() => {
     const delta = Math.floor((Date.now() - inicio) / 1000);
     const hh = String(Math.floor(delta / 3600)).padStart(2, '0');
     const mm = String(Math.floor((delta % 3600) / 60)).padStart(2, '0');
@@ -170,8 +174,6 @@ function iniciarCronometro(id, inicio) {
     cronEl.textContent = `${hh}:${mm}:${ss}`;
   }, 1000);
 }
-
-
 
 
   function guardarAccion(id) {

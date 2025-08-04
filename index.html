@@ -29,223 +29,221 @@
   <button onclick="agregarFila()">Agregar fila</button>
   <div id="carpetas"></div>
 
-<script>
-const carpetas = {};
-const cronometrosActivos = {};
+  <script>
+    const carpetas = {};
+    const cronometrosActivos = {};
 
-setInterval(() => {
-  document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
-}, 1000);
+    setInterval(() => {
+      document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
+    }, 1000);
 
-function agregarFila() {
-  const fila = document.createElement("tr");
-  const campos = ['equipo','interno','modelo','nroBase','horasBase','horasActuales'];
-  campos.forEach(campo => {
-    const td = document.createElement("td");
-    const input = document.createElement("input");
-    input.type = campo.includes('Horas') ? "number" : "text";
-    if (campo === 'horasBase') {
-      input.addEventListener("input", () => verificarColor(input));
-    }
-    td.appendChild(input);
-    fila.appendChild(td);
-  });
+    function agregarFila() {
+      const fila = document.createElement("tr");
+      const campos = ['equipo','interno','modelo','nroBase','horasBase','horasActuales'];
+      campos.forEach(campo => {
+        const td = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = campo.includes('Horas') ? "number" : "text";
+        if (campo === 'horasBase') {
+          input.addEventListener("input", () => verificarColor(input));
+        }
+        td.appendChild(input);
+        fila.appendChild(td);
+      });
 
-  const servicioTd = document.createElement("td");
-  const select = document.createElement("select");
-  ['Motor','Transmisión','Hidráulico','Otro'].forEach(tipo => {
-    const opt = document.createElement("option");
-    opt.text = tipo;
-    select.add(opt);
-  });
-  servicioTd.appendChild(select);
-  fila.appendChild(servicioTd);
+      const servicioTd = document.createElement("td");
+      const select = document.createElement("select");
+      ['Motor','Transmisión','Hidráulico','Otro'].forEach(tipo => {
+        const opt = document.createElement("option");
+        opt.text = tipo;
+        select.add(opt);
+      });
+      servicioTd.appendChild(select);
+      fila.appendChild(servicioTd);
 
-  const qrTd = document.createElement("td");
-  const canvas = document.createElement("canvas");
-  canvas.width = 80;
-  canvas.height = 80;
-  qrTd.appendChild(canvas);
-  fila.appendChild(qrTd);
+      const qrTd = document.createElement("td");
+      const canvas = document.createElement("canvas");
+      canvas.width = 80;
+      canvas.height = 80;
+      qrTd.appendChild(canvas);
+      fila.appendChild(qrTd);
 
-  const btnTd = document.createElement("td");
-  const btn = document.createElement("button");
-  btn.textContent = "Crear carpeta";
-  btn.onclick = () => crearCarpeta(fila, canvas);
-  btnTd.appendChild(btn);
-  fila.appendChild(btnTd);
+      const btnTd = document.createElement("td");
+      const btn = document.createElement("button");
+      btn.textContent = "Crear carpeta";
+      btn.onclick = () => crearCarpeta(fila, canvas);
+      btnTd.appendChild(btn);
+      fila.appendChild(btnTd);
 
-  document.getElementById("tabla").appendChild(fila);
-}
-
-function verificarColor(input) {
-  const val = parseInt(input.value);
-  const td = input.parentElement;
-  const fila = td.parentElement;
-  const select = fila.querySelector("select");
-  td.className = "";
-  let mensaje = "";
-  const hora = new Date().toLocaleTimeString();
-
-  if (!isNaN(val)) {
-    if (val >= 200 && val <= 250) {
-      td.classList.add("resaltar-rojo");
-      select.value = "Motor";
-      mensaje = `Estado ROJO: Motor`;
-    } else if (val >= 950 && val <= 1000) {
-      td.classList.add("resaltar-verde");
-      select.value = "Transmisión";
-      mensaje = `Estado VERDE: Transmisión`;
-    } else if (val >= 1950 && val <= 2000) {
-      td.classList.add("resaltar-amarillo");
-      select.value = "Hidráulico";
-      mensaje = `Estado AMARILLO: Hidráulico`;
+      document.getElementById("tabla").appendChild(fila);
     }
 
-    const id = Object.keys(carpetas).slice(-1)[0];
-    if (id && carpetas[id]) {
-      carpetas[id].acciones.push(`📌 ${hora} — ${mensaje}`);
+    function verificarColor(input) {
+      const val = parseInt(input.value);
+      const td = input.parentElement;
+      const fila = td.parentElement;
+      const select = fila.querySelector("select");
+      td.className = "";
+      let mensaje = "";
+      const hora = new Date().toLocaleTimeString();
+
+      if (!isNaN(val)) {
+        if (val >= 200 && val <= 250) {
+          td.classList.add("resaltar-rojo");
+          select.value = "Motor";
+          mensaje = `Estado ROJO: Motor`;
+        } else if (val >= 950 && val <= 1000) {
+          td.classList.add("resaltar-verde");
+          select.value = "Transmisión";
+          mensaje = `Estado VERDE: Transmisión`;
+        } else if (val >= 1950 && val <= 2000) {
+          td.classList.add("resaltar-amarillo");
+          select.value = "Hidráulico";
+          mensaje = `Estado AMARILLO: Hidráulico`;
+        }
+
+        const id = Object.keys(carpetas).slice(-1)[0];
+        if (id && carpetas[id]) {
+          carpetas[id].acciones.push(`📌 ${hora} — ${mensaje}`);
+          localStorage.setItem(id, JSON.stringify(carpetas[id]));
+          actualizarHistorial(id);
+        }
+      }
+    }
+
+    function crearCarpeta(fila, canvas) {
+      const inputs = fila.querySelectorAll("input");
+      const select = fila.querySelector("select");
+      const valores = [...inputs].map(i => i.value.trim());
+      const tipoServicio = select.value;
+      const id = `carpeta_${valores[3]}_${Date.now()}`;
+      const creado = Date.now();
+
+      carpetas[id] = {
+        equipo: valores[0],
+        interno: valores[1],
+        modelo: valores[2],
+        base: valores[3],
+        horasBase: valores[4],
+        servicio: tipoServicio,
+        creado,
+        acciones: []
+      };
+
       localStorage.setItem(id, JSON.stringify(carpetas[id]));
+      const url = location.href.split("#")[0] + `#${encodeURIComponent(id)}`;
+      new QRious({ element: canvas, value: url, size: 80 });
+      mostrarCarpeta(id);
+    }
+
+    function mostrarCarpeta(id) {
+      const datos = carpetas[id];
+      const div = document.createElement("div");
+      div.className = "carpeta";
+      div.innerHTML = `
+        <h3>📁 Carpeta: ${id}</h3>
+        <p><strong>Equipo:</strong> ${datos.equipo}</p>
+        <p><strong>Interno:</strong> ${datos.interno}</p>
+        <p><strong>Modelo:</strong> ${datos.modelo}</p>
+        <p><strong>N° Base:</strong> ${datos.base}</p>
+        <p><strong>Horas Base:</strong> ${datos.horasBase}</p>
+        <p><strong>Servicio:</strong> ${datos.servicio}</p>
+        <p><strong>Horas Actuales:</strong> <span id="cron_${id}" class="cronometro">00:00:00</span></p>
+        <textarea id="txt_${id}" placeholder="Escribir acción..."></textarea>
+        <button onclick="guardarAccion('${id}')">💾 Guardar acción</button>
+        <button onclick="descargarDocumento('${id}')">📥 Descargar documento</button>
+        <button onclick="eliminarCarpeta('${id}')">🗑️ Eliminar carpeta</button>
+        <ul id="hist_${id}"></ul>
+      `;
+      document.getElementById("carpetas").appendChild(div);
+      iniciarCronometro(id, datos.creado);
       actualizarHistorial(id);
     }
-  }
-}
 
-function crearCarpeta(fila, canvas) {
-  const inputs = fila.querySelectorAll("input");
-  const select = fila.querySelector("select");
-  const valores = [...inputs].map(i => i.value.trim());
-  const tipoServicio = select.value;
-  const id = `carpeta_${valores[3]}_${Date.now()}`;
-  const creado = Date.now();
+    function iniciarCronometro(id, inicio) {
+      if (cronometrosActivos[id]) clearInterval(cronometrosActivos[id]);
 
-  carpetas[id] = {
-    equipo: valores[0],
-    interno: valores[1],
-    modelo: valores[2],
-    base: valores[3],
-    horasBase: valores[4],
-    servicio: tipoServicio,
-    creado,
-    acciones: []
-  };
+      const cronEl = document.getElementById(`cron_${id}`);
+      if (!cronEl) return;
 
-  localStorage.setItem(id, JSON.stringify(carpetas[id]));
-  const url = location.href.split("#")[0] + `#${encodeURIComponent(id)}`;
-  new QRious({ element: canvas, value: url, size: 80 });
-  mostrarCarpeta(id);
-}
+      cronometrosActivos[id] = setInterval(() => {
+        const delta = Math.floor((Date.now() - inicio) / 1000);
+        const hh = String(Math.floor(delta / 3600)).padStart(2, '0');
+        const mm = String(Math.floor((delta % 3600) / 60)).padStart(2, '0');
+        const ss = String(delta % 60).padStart(2, '0');
+        cronEl.textContent = `${hh}:${mm}:${ss}`;
+      }, 1000);
+    }
 
-function mostrarCarpeta(id) {
-  const datos = carpetas[id];
-  const div = document.createElement("div");
-  div.className = "carpeta";
-  div.innerHTML = `
-    <h3>📁 Carpeta: ${id}</h3>
-    <p><strong>Equipo:</strong> ${datos.equipo}</p>
-    <p><strong>Interno:</strong> ${datos.interno}</p>
-    <p><strong>Modelo:</strong> ${datos.modelo}</p>
-    <p><strong>N° Base:</strong> ${datos.base}</p>
-    <p><strong>Horas Base:</strong> ${datos.horasBase}</p>
-    <p><strong>Servicio:</strong> ${datos.servicio}</p>
-    <p><strong>Horas Actuales:</strong> <span id="cron_${id}" class="cronometro">00:00:00</span></p>
-    <textarea id="txt_${id}" placeholder="Escribir acción..."></textarea>
-    <button onclick="guardarAccion('${id}')">💾 Guardar acción</button>
-    <button onclick="descargarDocumento('${id}')">📥 Descargar documento</button>
-    <button onclick="eliminarCarpeta('${id}')">🗑️ Eliminar carpeta</button>
-    <ul id="hist_${id}"></ul>
-  `;
-  document.getElementById("carpetas").appendChild(div);
-  iniciarCronometro(id, datos.creado);
-  actualizarHistorial(id);
-}
-
-function iniciarCronometro(id, inicio) {
-  if (cronometrosActivos[id]) clearInterval(cronometrosActivos[id]);
-
-  const cronEl = document.getElementById(`cron_${id}`);
-  if (!cronEl) return;
-
-  cronometrosActivos[id] = setInterval(() => {
-    const delta = Math.floor((Date.now() - inicio) / 1000);
-    const hh = String(Math.floor(delta / 3600)).padStart(2, '0');
-    const mm = String(Math.floor((delta % 3600) / 60)).padStart(2, '0');
-    const ss = String(delta % 60).padStart(2, '0');
-    cronEl.textContent = `${hh}:${mm}:${ss}`;
-  }, 1000);
-}
-
-function guardarAccion(id) {
-  const txt = document.getElementById(`txt_${id}`).value.trim();
-  if (!txt) return;
-  const fecha = new Date().toLocaleString();
-  carpetas[id].acciones.push(`${fecha}: ${txt}`);
-  localStorage.setItem(id, JSON.stringify(carpetas[id]));
-  document.getElementById(`txt_${id}`).value = "";
-  actualizarHistorial(id);
-}
-
-function actualizarHistorial(id) {
-  const ul = document.getElementById(`hist_${id}`);
-  ul.innerHTML = "";
-  carpetas[id].acciones.forEach((accion, i) => {
-    const li = document.createElement("li");
-    li.textContent = accion;
-
-    const btnBorrar = document.createElement("button");
-    btnBorrar.textContent = "🗑️";
-    btnBorrar.onclick = () => {
-      carpetas[id].acciones.splice(i, 1);
+    function guardarAccion(id) {
+      const txt = document.getElementById(`txt_${id}`).value.trim();
+      if (!txt) return;
+      const fecha = new Date().toLocaleString();
+      carpetas[id].acciones.push(`${fecha}: ${txt}`);
       localStorage.setItem(id, JSON.stringify(carpetas[id]));
+            document.getElementById(`txt_${id}`).value = "";
       actualizarHistorial(id);
-    };
+    }
 
-    li.appendChild(btnBorrar);
-    ul.appendChild(li);
-  });
-}
+    function actualizarHistorial(id) {
+      const ul = document.getElementById(`hist_${id}`);
+      ul.innerHTML = "";
+      carpetas[id].acciones.forEach((accion, i) => {
+        const li = document.createElement("li");
+        li.textContent = accion;
 
-function descargarDocumento(id) {
-  const datos = carpetas[id];
-  let contenido = `Carpeta: ${id}\n`;
-  contenido += `Equipo: ${datos.equipo}\nInterno: ${datos.interno}\nModelo: ${datos.modelo}\n`;
-  contenido += `N° Base: ${datos.base}\nHoras Base: ${datos.horasBase}\nServicio: ${datos.servicio}\n\nAcciones:\n`;
-  datos.acciones.forEach(accion => contenido += `- ${accion}\n`);
+        const btnBorrar = document.createElement("button");
+        btnBorrar.textContent = "🗑️";
+        btnBorrar.onclick = () => {
+          carpetas[id].acciones.splice(i, 1);
+          localStorage.setItem(id, JSON.stringify(carpetas[id]));
+          actualizarHistorial(id);
+        };
 
-  const blob = new Blob([contenido], { type: 'text/plain' });
-  const enlace = document.createElement("a");
-  enlace.href = URL.createObjectURL(blob);
-  enlace.download = `${id}.txt`;
-  enlace.click();
-}
+        li.appendChild(btnBorrar);
+        ul.appendChild(li);
+      });
+    }
 
-function eliminarCarpeta(id) {
-  localStorage.removeItem(id);
-  delete carpetas[id];
-  const divs = document.querySelectorAll(".carpeta");
-  divs.forEach(div => {
-    if (div.innerHTML.includes(id)) div.remove();
-  });
-}
+    function descargarDocumento(id) {
+      const datos = carpetas[id];
+      let contenido = `Carpeta: ${id}\n`;
+      contenido += `Equipo: ${datos.equipo}\nInterno: ${datos.interno}\nModelo: ${datos.modelo}\n`;
+      contenido += `N° Base: ${datos.base}\nHoras Base: ${datos.horasBase}\nServicio: ${datos.servicio}\n\nAcciones:\n`;
+      datos.acciones.forEach(accion => contenido += `- ${accion}\n`);
 
-window.addEventListener("load", () => {
-  const hash = location.hash.replace("#", "");
-  if (hash && localStorage.getItem(hash)) {
-    const datos = JSON.parse(localStorage.getItem(hash));
-    carpetas[hash] = datos;
-    mostrarCarpeta(hash);
-  } else {
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith("carpeta_")) {
-        const datos = JSON.parse(localStorage.getItem(key));
-        carpetas[key] = datos;
-        mostrarCarpeta(key);
+      const blob = new Blob([contenido], { type: 'text/plain' });
+      const enlace = document.createElement("a");
+      enlace.href = URL.createObjectURL(blob);
+      enlace.download = `${id}.txt`;
+      enlace.click();
+    }
+
+    function eliminarCarpeta(id) {
+      localStorage.removeItem(id);
+      delete carpetas[id];
+      const divs = document.querySelectorAll(".carpeta");
+      divs.forEach(div => {
+        if (div.innerHTML.includes(id)) div.remove();
+      });
+    }
+
+    window.addEventListener("load", () => {
+      const hash = location.hash.replace("#", "");
+      if (hash && localStorage.getItem(hash)) {
+        const datos = JSON.parse(localStorage.getItem(hash));
+        carpetas[hash] = datos;
+        mostrarCarpeta(hash);
+      } else {
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith("carpeta_")) {
+            const datos = JSON.parse(localStorage.getItem(key));
+            carpetas[key] = datos;
+            mostrarCarpeta(key);
+          }
+        });
       }
     });
-  }
-});
-</script>
+  </script>
 </body>
 </html>
-
-  

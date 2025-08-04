@@ -13,9 +13,15 @@
   <datalist id="listaBases"></datalist>
   <div id="carpetas"></div>
 
-   
-
   <<script type="module">
+   const carpetas = {};
+    const cronometrosActivos = {};
+    let basesDesdeExcel = [];
+
+    setInterval(() => {
+      document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
+    }, 1000);
+
 import * as XLSX from "https://cdn.sheetjs.com/xlsx-0.20.0/package/xlsx.mjs";
 
 fetch("https://beluchiodini-sys.github.io/Nuevedieciseis/planillatecnica.xlsx")
@@ -32,13 +38,7 @@ fetch("https://beluchiodini-sys.github.io/Nuevedieciseis/planillatecnica.xlsx")
       alert("❌ No se encontró la columna 'N. DE SERIE:'");
       return;
     }
- const carpetas = {};
-    const cronometrosActivos = {};
-    let basesDesdeExcel = [];
-
-    setInterval(() => {
-      document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
-    }, 1000);
+ 
     const bases = datos.slice(1).map(fila => fila[indice]).filter(x => !!x);
 
     console.log(`✅ Bases cargadas desde Excel: ${bases.length}`);

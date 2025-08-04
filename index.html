@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>NUEVEDIECISEIS</title>
   <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
     h2 { display: flex; justify-content: space-between; }
@@ -27,15 +28,43 @@
     </tr>
   </table>
   <button onclick="agregarFila()">Agregar fila</button>
+  <datalist id="listaBases"></datalist>
   <div id="carpetas"></div>
 
   <script>
     const carpetas = {};
     const cronometrosActivos = {};
+    let basesDesdeExcel = [];
 
     setInterval(() => {
       document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
     }, 1000);
+
+    // LECTURA AUTOMÁTICA DEL EXCEL EN GITHUB
+    fetch("https://beluchiodini.github.io/TU-REPO/planillatecnica.xlsx")  // <-- reemplazá TU-REPO
+      .then(res => res.arrayBuffer())
+      .then(buffer => {
+        const workbook = XLSX.read(buffer, { type: "array" });
+        const hoja = workbook.Sheets[workbook.SheetNames[0]];
+        const datos = XLSX.utils.sheet_to_json(hoja, { header: 1 });
+
+        const indice = datos[0].indexOf("N° Base");
+        if (indice === -1) {
+          alert("❌ No se encontró la columna 'N° Base'");
+          return;
+        }
+
+        basesDesdeExcel = datos.slice(1).map(f => f[indice]).filter(Boolean);
+
+        const datalist = document.getElementById("listaBases");
+        basesDesdeExcel.forEach(base => {
+          const opt = document.createElement("option");
+          opt.value = base;
+          datalist.appendChild(opt);
+        });
+
+        console.log("✅ Bases cargadas desde Excel:", basesDesdeExcel.length);
+      });
 
     function agregarFila() {
       const fila = document.createElement("tr");
@@ -44,6 +73,9 @@
         const td = document.createElement("td");
         const input = document.createElement("input");
         input.type = campo.includes('Horas') ? "number" : "text";
+        if (campo === 'nroBase' && basesDesdeExcel.length > 0) {
+          input.setAttribute("list", "listaBases");
+        }
         if (campo === 'horasBase') {
           input.addEventListener("input", () => verificarColor(input));
         }
@@ -162,10 +194,8 @@
 
     function iniciarCronometro(id, inicio) {
       if (cronometrosActivos[id]) clearInterval(cronometrosActivos[id]);
-
       const cronEl = document.getElementById(`cron_${id}`);
       if (!cronEl) return;
-
       cronometrosActivos[id] = setInterval(() => {
         const delta = Math.floor((Date.now() - inicio) / 1000);
         const hh = String(Math.floor(delta / 3600)).padStart(2, '0');
@@ -181,7 +211,7 @@
       const fecha = new Date().toLocaleString();
       carpetas[id].acciones.push(`${fecha}: ${txt}`);
       localStorage.setItem(id, JSON.stringify(carpetas[id]));
-            document.getElementById(`txt_${id}`).value = "";
+      document.getElementById(`txt_${id}`).value = "";
       actualizarHistorial(id);
     }
 
@@ -191,7 +221,6 @@
       carpetas[id].acciones.forEach((accion, i) => {
         const li = document.createElement("li");
         li.textContent = accion;
-
         const btnBorrar = document.createElement("button");
         btnBorrar.textContent = "🗑️";
         btnBorrar.onclick = () => {
@@ -199,7 +228,6 @@
           localStorage.setItem(id, JSON.stringify(carpetas[id]));
           actualizarHistorial(id);
         };
-
         li.appendChild(btnBorrar);
         ul.appendChild(li);
       });
@@ -211,7 +239,6 @@
       contenido += `Equipo: ${datos.equipo}\nInterno: ${datos.interno}\nModelo: ${datos.modelo}\n`;
       contenido += `N° Base: ${datos.base}\nHoras Base: ${datos.horasBase}\nServicio: ${datos.servicio}\n\nAcciones:\n`;
       datos.acciones.forEach(accion => contenido += `- ${accion}\n`);
-
       const blob = new Blob([contenido], { type: 'text/plain' });
       const enlace = document.createElement("a");
       enlace.href = URL.createObjectURL(blob);

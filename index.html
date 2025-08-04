@@ -325,6 +325,15 @@ VARIOS
     function descargarQR(id) {
   const canvas = document.getElementById(`qr_${id}`);
   if (!canvas) return;
+  // Esperar brevemente para asegurarse que QRious terminó de dibujar
+  setTimeout(() => {
+    const enlace = document.createElement("a");
+    enlace.href = canvas.toDataURL("image/png");
+    enlace.download = `${carpetas[id].equipo}_QR.png`;
+    enlace.click();
+  }, 200);
+}`);
+  if (!canvas) return;
   const enlace = document.createElement("a");
   enlace.href = canvas.toDataURL("image/png");
   enlace.download = `${carpetas[id].equipo}_QR.png`;

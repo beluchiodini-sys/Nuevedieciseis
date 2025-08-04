@@ -116,15 +116,6 @@
       div.className = "carpeta";
       div.innerHTML = `
         <h3>📁 Carpeta: ${id}</h3>
-        <p><strong>EMPRESA:</strong> ${datos.empresa}</p>
-        <p><strong>EQUIPO:</strong> ${datos.equipo}</p>
-        <p><strong>INTERNO:</strong> ${datos.interno}</p>
-        <p><strong>MARCA MODELO:</strong> ${datos.modelo}</p>
-        <p><strong>PATENTE (N° BASE):</strong> ${datos.base}</p>
-        <p><strong>HORAS/KM:</strong> ${datos.horasBase}</p>
-        <p><strong>N. DE SERIE:</strong> ${datos.serie}</p>
-        <p><strong>SERVICIO:</strong> ${datos.servicio}</p>
-        <p><strong>TIEMPO ACTUAL:</strong> <span id="cron_${id}" class="cronometro">00:00:00</span></p>
         <textarea id="txt_${id}" placeholder="Escribir acción..."></textarea>
         <button onclick="guardarAccion('${id}')">💾 Guardar acción</button>
         <button onclick="descargarDocumento('${id}')">📥 Descargar documento</button>
@@ -200,4 +191,3 @@
   </script>
 </body>
 </html>
-

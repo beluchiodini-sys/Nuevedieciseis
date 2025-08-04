@@ -1,23 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>NUEVEDIECISEIS</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style>
-    body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
-    h2 { display: flex; justify-content: space-between; }
-    table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 0 5px #ccc; }
-    th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: center; }
-    input, select, textarea { width: 90%; padding: 6px; margin-top: 4px; }
-    button { padding: 6px 12px; margin: 5px; cursor: pointer; }
-    canvas { margin-top: 5px; }
-    .carpeta { margin-top: 20px; padding: 15px; background: #eef; border-radius: 8px; }
-    .cronometro { font-weight: bold; color: #007700; font-size: 1.1em; }
-    .resaltar-rojo { background-color: #ffcccc !important; }
-    .resaltar-verde { background-color: #ccffcc !important; }
-    .resaltar-amarillo { background-color: #ffffcc !important; }
   </style>
 </head>
 <body>
@@ -40,19 +22,44 @@
       document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
     }, 1000);
 
-    // LECTURA AUTOMÁTICA DEL EXCEL EN GITHUB
-   fetch("https://beluchiodini-sys.github.io/Nuevedieciseis/planillatecnica.xlsx")
-      .then(res => res.arrayBuffer())
-      .then(buffer => {
-        const workbook = XLSX.read(buffer, { type: "array" });
-        const hoja = workbook.Sheets[workbook.SheetNames[0]];
-        const datos = XLSX.utils.sheet_to_json(hoja, { header: 1 });
+  <script type="module">
+import * as XLSX from "https://cdn.sheetjs.com/xlsx-0.20.0/package/xlsx.mjs";
 
-        const indice = datos[0].indexOf("N° Base");
-        if (indice === -1) {
-          alert("❌ No se encontró la columna 'N° Base'");
-          return;
-        }
+fetch("https://beluchiodini-sys.github.io/Nuevedieciseis/planillatecnica.xlsx")
+  .then((res) => res.arrayBuffer())
+  .then((ab) => {
+    const wb = XLSX.read(ab);
+    const hoja = wb.Sheets[wb.SheetNames[0]];
+    const datos = XLSX.utils.sheet_to_json(hoja, { header: 1 });
+
+    // Buscamos la columna con el nombre exacto
+    const indice = datos[0].indexOf("N. DE SERIE:");
+
+    if (indice === -1) {
+      alert("❌ No se encontró la columna 'N. DE SERIE:'");
+      return;
+    }
+
+    const bases = datos.slice(1).map(fila => fila[indice]).filter(x => !!x);
+
+    console.log(`✅ Bases cargadas desde Excel: ${bases.length}`);
+
+    const datalist = document.getElementById("datalistOptions");
+    if (!datalist) {
+      console.warn("⚠️ No se encontró el datalist con id 'datalistOptions'");
+      return;
+    }
+
+    bases.forEach(valor => {
+      const option = document.createElement("option");
+      option.value = valor;
+      datalist.appendChild(option);
+    });
+  })
+  .catch(err => {
+    console.error("❌ Error al cargar el Excel:", err);
+  });
+</script>
 
         basesDesdeExcel = datos.slice(1).map(f => f[indice]).filter(Boolean);
 

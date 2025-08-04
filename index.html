@@ -329,28 +329,9 @@ VARIOS
   enlace.href = canvas.toDataURL("image/png");
   enlace.download = `${carpetas[id].equipo}_QR.png`;
   enlace.click();
-}`);
-  if (!canvas) return;
-  const enlace = document.createElement("a");
-  enlace.href = canvas.toDataURL("image/png");
-  enlace.download = `${carpetas[id].equipo}_QR.png`;
-  enlace.click();
-}`);
-  if (!canvas) return;
-  const enlace = document.createElement("a");
-  enlace.href = canvas.toDataURL("image/png");
-  enlace.download = `${carpetas[id].equipo}_QR.png`;
-  enlace.click();
-}`);
-      if (!canvas) return;
-      const enlace = document.createElement("a");
-      enlace.href = canvas.toDataURL("image/png");
-      enlace.download = `${carpetas[id].equipo}_QR.png`;
-      enlace.click();
-    }
-    }
+}
 
-    function eliminarCarpeta(id) {
+function eliminarCarpeta(id) {
       localStorage.removeItem(id);
       delete carpetas[id];
       const divs = document.querySelectorAll(".carpeta");

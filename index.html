@@ -77,7 +77,81 @@
     const carpetas = {};
     const cronometrosActivos = {};
 
-    const fichaOriginal = `RIGA 4742 ESTACION FLORES CORDOBA\n\nCP. :5000\nTEL. 3517726146\nCRISTIAN TABORDA@NUEVEDIECISEIS.COM.AR\n\nPLANILLA TÉCNICA\n\nEMPRESA:\nEQUIPO:\t\t\t\t\t\t\t\t\t\tINTERNO:\nMARCA MODELO:\t\t\t\t\t\t\t\t\tPATENTE:\nHORAS/KM:\nN. DE SERIE:\n\nMOTOR\nITEM\tDESCRIPCIÓN\tMARCA/MODELO\tCANTIDAD\n1\tACEITE\t\t\t\n2\tFILTRO ACEITE\t\t\t\n3\tFILTRO COMBUSTIBLE\t\t\t\n4\tFILTRO COMBUSTIBLE\t\t\t\n5\tFILTRO DE AIRE\t\t\t\n6\tFILTRO DE AIRE\t\t\t\n7\tCORREAS\t\t\t\n8\tREFRIGERANTE\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n... (continúa)`;
+    const fichaOriginal = `RIGA 4742 ESTACION FLORES CORDOBA\n\nCP. :5000\nTEL. 3517726146\nCRISTIAN TABORDA@NUEVEDIECISEIS.COM.AR\n\nPLANILLA TÉCNICA\n\nEMPRESA:\nEQUIPO:\t\t\t\t\t\t\t\t\t\tINTERNO:\nMARCA MODELO:\t\t\t\t\t\t\t\t\tPATENTE:\nHORAS/KM:\nN. DE SERIE:\n\nMOTOR\nITEM\tDESCRIPCIÓN\tMARCA/MODELO\tCANTIDAD\n1\tACEITE\t\t\t\n2\tFILTRO ACEITE\t\t\t\n3\tFILTRO COMBUSTIBLE\t\t\t\n4\tFILTRO COMBUSTIBLE\t\t\t\n5\tFILTRO DE AIRE\t\t\t\n6\tFILTRO DE AIRE\t\t\t\n7\tCORREAS\t\t\t\n8\tREFRIGERANTE\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n10				
+
+TRANSMISIÓN
+1				
+2				
+3				
+4				
+5				
+6				
+7				
+8				
+9				
+10				
+
+HIDRÁULICO
+1				
+2				
+3				
+4				
+5				
+6				
+7				
+8				
+9				
+10				
+
+NEUMÁTICO
+1				
+2				
+3				
+4				
+5				
+6				
+7				
+8				
+9				
+10				
+
+ELÉCTRICO
+1				
+2				
+3				
+4				
+5				
+6				
+7				
+8				
+9				
+10				
+
+TREN RODANTE
+1				
+2				
+3				
+4				
+5				
+6				
+7				
+8				
+9				
+10				
+
+ELEMENTOS DE DESGASTE
+1				
+2				
+3				
+4				
+5				
+6				
+7				
+8				
+9				
+10				
+
+CABINA`;
 
     function crearCarpetaDesdeFormulario() {
       const equipo = document.getElementById('equipo').value;
@@ -88,7 +162,7 @@
       const serie = document.getElementById('serie').value;
       const empresa = document.getElementById('empresa').value;
       const tipoServicio = document.getElementById('servicio').value;
-      const id = `carpeta_${base}_${Date.now()}`;
+      const id = `carpeta_${equipo.replace(/\s+/g, '_')}_${Date.now()}`;
       const creado = Date.now();
 
       carpetas[id] = {
@@ -115,7 +189,7 @@
       const div = document.createElement("div");
       div.className = "carpeta";
       div.innerHTML = `
-        <h3>📁 Carpeta: ${id}</h3>
+        <h3>📁 Carpeta: ${datos.equipo}</h3>
         <textarea id="txt_${id}" placeholder="Escribir acción..."></textarea>
         <button onclick="guardarAccion('${id}')">💾 Guardar acción</button>
         <button onclick="descargarDocumento('${id}')">📥 Descargar documento</button>

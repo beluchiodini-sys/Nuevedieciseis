@@ -178,6 +178,10 @@
     document.getElementById(`txt_${id}`).value = "";
     actualizarHistorial(id);
   }
+
+  }
+
+  function actualizarHistorial(id) {
     const ul = document.getElementById(`hist_${id}`);
     ul.innerHTML = "";
     carpetas[id].acciones.forEach((accion, i) => {
@@ -239,5 +243,3 @@
 </script>
 </body>
 </html>
-
- 

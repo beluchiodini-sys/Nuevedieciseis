@@ -41,7 +41,7 @@
     }, 1000);
 
     // LECTURA AUTOMÁTICA DEL EXCEL EN GITHUB
-    fetch("https://beluchiodini.github.io/TU-REPO/planillatecnica.xlsx")  // <-- reemplazá TU-REPO
+   fetch("https://beluchiodini-sys.github.io/Nuevedieciseis/planillatecnica.xlsx")
       .then(res => res.arrayBuffer())
       .then(buffer => {
         const workbook = XLSX.read(buffer, { type: "array" });

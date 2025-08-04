@@ -3,15 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <title>NUEVEDIECISEIS</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
   <style>
-    /* Ejemplo de estilos para los colores que usás */
-    .resaltar-rojo { background-color: #f88; }
-    .resaltar-verde { background-color: #8f8; }
-    .resaltar-amarillo { background-color: #ff8; }
-    /* Estilo básico para tabla */
-    table, th, td { border: 1px solid #333; border-collapse: collapse; padding: 5px; }
-    th { background-color: #ddd; }
-    .carpeta { border: 1px solid #aaa; margin-top: 10px; padding: 10px; }
+    body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
+    h2 { display: flex; justify-content: space-between; }
+    table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 0 5px #ccc; }
+    th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: center; }
+    input, select, textarea { width: 90%; padding: 6px; margin-top: 4px; }
+    button { padding: 6px 12px; margin: 5px; cursor: pointer; }
+    canvas { margin-top: 5px; }
+    .carpeta { margin-top: 20px; padding: 15px; background: #eef; border-radius: 8px; }
+    .cronometro { font-weight: bold; color: #007700; font-size: 1.1em; }
+    .resaltar-rojo { background-color: #ffcccc !important; }
+    .resaltar-verde { background-color: #ccffcc !important; }
+    .resaltar-amarillo { background-color: #ffffcc !important; }
   </style>
 </head>
 <body>
@@ -22,54 +27,15 @@
     </tr>
   </table>
   <button onclick="agregarFila()">Agregar fila</button>
-  <datalist id="listaBases"></datalist>
   <div id="carpetas"></div>
 
-  <script type="module">
-    import * as XLSX from "https://cdn.sheetjs.com/xlsx-0.20.0/package/xlsx.mjs";
-
+  <script>
     const carpetas = {};
     const cronometrosActivos = {};
-    let basesDesdeExcel = [];
 
     setInterval(() => {
       document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
     }, 1000);
-
-    fetch("https://beluchiodini-sys.github.io/Nuevedieciseis/planillatecnica.xlsx")
-      .then((res) => res.arrayBuffer())
-      .then((ab) => {
-        const wb = XLSX.read(ab);
-        const hoja = wb.Sheets[wb.SheetNames[0]];
-        const datos = XLSX.utils.sheet_to_json(hoja, { header: 1 });
-
-        // Buscamos la columna con el nombre exacto
-        const indice = datos[0].indexOf("N. DE SERIE:");
-
-        if (indice === -1) {
-          alert("❌ No se encontró la columna 'N. DE SERIE:'");
-          return;
-        }
-    
-        basesDesdeExcel = datos.slice(1).map(fila => fila[indice]).filter(x => !!x);
-
-        console.log(`✅ Bases cargadas desde Excel: ${basesDesdeExcel.length}`);
-
-        const datalist = document.getElementById("listaBases");
-        if (!datalist) {
-          console.warn("⚠️ No se encontró el datalist con id 'listaBases'");
-          return;
-        }
-
-        basesDesdeExcel.forEach(valor => {
-          const option = document.createElement("option");
-          option.value = valor;
-          datalist.appendChild(option);
-        });
-      })
-      .catch(err => {
-        console.error("❌ Error al cargar el Excel:", err);
-      });
 
     function agregarFila() {
       const fila = document.createElement("tr");
@@ -78,9 +44,6 @@
         const td = document.createElement("td");
         const input = document.createElement("input");
         input.type = campo.includes('Horas') ? "number" : "text";
-        if (campo === 'nroBase' && basesDesdeExcel.length > 0) {
-          input.setAttribute("list", "listaBases");
-        }
         if (campo === 'horasBase') {
           input.addEventListener("input", () => verificarColor(input));
         }
@@ -128,20 +91,20 @@
         if (val >= 200 && val <= 250) {
           td.classList.add("resaltar-rojo");
           select.value = "Motor";
-          mensaje = `Estado ROJO: Motor`;
+          mensaje = Estado ROJO: Motor;
         } else if (val >= 950 && val <= 1000) {
           td.classList.add("resaltar-verde");
           select.value = "Transmisión";
-          mensaje = `Estado VERDE: Transmisión`;
+          mensaje = Estado VERDE: Transmisión;
         } else if (val >= 1950 && val <= 2000) {
           td.classList.add("resaltar-amarillo");
           select.value = "Hidráulico";
-          mensaje = `Estado AMARILLO: Hidráulico`;
+          mensaje = Estado AMARILLO: Hidráulico;
         }
 
         const id = Object.keys(carpetas).slice(-1)[0];
         if (id && carpetas[id]) {
-          carpetas[id].acciones.push(`📌 ${hora} — ${mensaje}`);
+          carpetas[id].acciones.push(📌 ${hora} — ${mensaje});
           localStorage.setItem(id, JSON.stringify(carpetas[id]));
           actualizarHistorial(id);
         }
@@ -153,7 +116,7 @@
       const select = fila.querySelector("select");
       const valores = [...inputs].map(i => i.value.trim());
       const tipoServicio = select.value;
-      const id = `carpeta_${valores[3]}_${Date.now()}`;
+      const id = carpeta_${valores[3]}_${Date.now()};
       const creado = Date.now();
 
       carpetas[id] = {
@@ -168,8 +131,7 @@
       };
 
       localStorage.setItem(id, JSON.stringify(carpetas[id]));
-      const url = location.href.split("#")[0] + `#${encodeURIComponent(id)}`;
-      // Generar QR con QRious, asegúrate de incluir la librería QRious en tu proyecto
+      const url = location.href.split("#")[0] + #${encodeURIComponent(id)};
       new QRious({ element: canvas, value: url, size: 80 });
       mostrarCarpeta(id);
     }
@@ -178,7 +140,7 @@
       const datos = carpetas[id];
       const div = document.createElement("div");
       div.className = "carpeta";
-      div.innerHTML = `
+      div.innerHTML = 
         <h3>📁 Carpeta: ${id}</h3>
         <p><strong>Equipo:</strong> ${datos.equipo}</p>
         <p><strong>Interno:</strong> ${datos.interno}</p>
@@ -192,7 +154,7 @@
         <button onclick="descargarDocumento('${id}')">📥 Descargar documento</button>
         <button onclick="eliminarCarpeta('${id}')">🗑️ Eliminar carpeta</button>
         <ul id="hist_${id}"></ul>
-      `;
+      ;
       document.getElementById("carpetas").appendChild(div);
       iniciarCronometro(id, datos.creado);
       actualizarHistorial(id);
@@ -200,33 +162,36 @@
 
     function iniciarCronometro(id, inicio) {
       if (cronometrosActivos[id]) clearInterval(cronometrosActivos[id]);
-      const cronEl = document.getElementById(`cron_${id}`);
+
+      const cronEl = document.getElementById(cron_${id});
       if (!cronEl) return;
+
       cronometrosActivos[id] = setInterval(() => {
         const delta = Math.floor((Date.now() - inicio) / 1000);
         const hh = String(Math.floor(delta / 3600)).padStart(2, '0');
         const mm = String(Math.floor((delta % 3600) / 60)).padStart(2, '0');
         const ss = String(delta % 60).padStart(2, '0');
-        cronEl.textContent = `${hh}:${mm}:${ss}`;
+        cronEl.textContent = ${hh}:${mm}:${ss};
       }, 1000);
     }
 
     function guardarAccion(id) {
-      const txt = document.getElementById(`txt_${id}`).value.trim();
+      const txt = document.getElementById(txt_${id}).value.trim();
       if (!txt) return;
       const fecha = new Date().toLocaleString();
-      carpetas[id].acciones.push(`${fecha}: ${txt}`);
+      carpetas[id].acciones.push(${fecha}: ${txt});
       localStorage.setItem(id, JSON.stringify(carpetas[id]));
-      document.getElementById(`txt_${id}`).value = "";
+            document.getElementById(txt_${id}).value = "";
       actualizarHistorial(id);
     }
 
     function actualizarHistorial(id) {
-      const ul = document.getElementById(`hist_${id}`);
+      const ul = document.getElementById(hist_${id});
       ul.innerHTML = "";
       carpetas[id].acciones.forEach((accion, i) => {
         const li = document.createElement("li");
         li.textContent = accion;
+
         const btnBorrar = document.createElement("button");
         btnBorrar.textContent = "🗑️";
         btnBorrar.onclick = () => {
@@ -234,6 +199,7 @@
           localStorage.setItem(id, JSON.stringify(carpetas[id]));
           actualizarHistorial(id);
         };
+
         li.appendChild(btnBorrar);
         ul.appendChild(li);
       });
@@ -241,14 +207,15 @@
 
     function descargarDocumento(id) {
       const datos = carpetas[id];
-      let contenido = `Carpeta: ${id}\n`;
-      contenido += `Equipo: ${datos.equipo}\nInterno: ${datos.interno}\nModelo: ${datos.modelo}\n`;
-      contenido += `N° Base: ${datos.base}\nHoras Base: ${datos.horasBase}\nServicio: ${datos.servicio}\n\nAcciones:\n`;
-      datos.acciones.forEach(accion => contenido += `- ${accion}\n`);
+      let contenido = Carpeta: ${id}\n;
+      contenido += Equipo: ${datos.equipo}\nInterno: ${datos.interno}\nModelo: ${datos.modelo}\n;
+      contenido += N° Base: ${datos.base}\nHoras Base: ${datos.horasBase}\nServicio: ${datos.servicio}\n\nAcciones:\n;
+      datos.acciones.forEach(accion => contenido += - ${accion}\n);
+
       const blob = new Blob([contenido], { type: 'text/plain' });
       const enlace = document.createElement("a");
       enlace.href = URL.createObjectURL(blob);
-      enlace.download = `${id}.txt`;
+      enlace.download = ${id}.txt;
       enlace.click();
     }
 
@@ -278,9 +245,5 @@
       }
     });
   </script>
-
-  <!-- Librería para generar QR (QRious), necesaria para que crearCarpeta funcione -->
-  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
 </body>
 </html>
-

@@ -1,5 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>NUEVEDIECISEIS</title>
+  <style>
+    /* Ejemplo de estilos para los colores que usás */
+    .resaltar-rojo { background-color: #f88; }
+    .resaltar-verde { background-color: #8f8; }
+    .resaltar-amarillo { background-color: #ff8; }
+    /* Estilo básico para tabla */
+    table, th, td { border: 1px solid #333; border-collapse: collapse; padding: 5px; }
+    th { background-color: #ddd; }
+    .carpeta { border: 1px solid #aaa; margin-top: 10px; padding: 10px; }
   </style>
 </head>
 <body>
@@ -13,8 +25,10 @@
   <datalist id="listaBases"></datalist>
   <div id="carpetas"></div>
 
-  <<script type="module">
-   const carpetas = {};
+  <script type="module">
+    import * as XLSX from "https://cdn.sheetjs.com/xlsx-0.20.0/package/xlsx.mjs";
+
+    const carpetas = {};
     const cronometrosActivos = {};
     let basesDesdeExcel = [];
 
@@ -22,52 +36,39 @@
       document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
     }, 1000);
 
-import * as XLSX from "https://cdn.sheetjs.com/xlsx-0.20.0/package/xlsx.mjs";
+    fetch("https://beluchiodini-sys.github.io/Nuevedieciseis/planillatecnica.xlsx")
+      .then((res) => res.arrayBuffer())
+      .then((ab) => {
+        const wb = XLSX.read(ab);
+        const hoja = wb.Sheets[wb.SheetNames[0]];
+        const datos = XLSX.utils.sheet_to_json(hoja, { header: 1 });
 
-fetch("https://beluchiodini-sys.github.io/Nuevedieciseis/planillatecnica.xlsx")
-  .then((res) => res.arrayBuffer())
-  .then((ab) => {
-    const wb = XLSX.read(ab);
-    const hoja = wb.Sheets[wb.SheetNames[0]];
-    const datos = XLSX.utils.sheet_to_json(hoja, { header: 1 });
+        // Buscamos la columna con el nombre exacto
+        const indice = datos[0].indexOf("N. DE SERIE:");
 
-    // Buscamos la columna con el nombre exacto
-    const indice = datos[0].indexOf("N. DE SERIE:");
+        if (indice === -1) {
+          alert("❌ No se encontró la columna 'N. DE SERIE:'");
+          return;
+        }
+    
+        basesDesdeExcel = datos.slice(1).map(fila => fila[indice]).filter(x => !!x);
 
-    if (indice === -1) {
-      alert("❌ No se encontró la columna 'N. DE SERIE:'");
-      return;
-    }
- 
-    const bases = datos.slice(1).map(fila => fila[indice]).filter(x => !!x);
-
-    console.log(`✅ Bases cargadas desde Excel: ${bases.length}`);
-
-    const datalist = document.getElementById("datalistOptions");
-    if (!datalist) {
-      console.warn("⚠️ No se encontró el datalist con id 'datalistOptions'");
-      return;
-    }
-
-    bases.forEach(valor => {
-      const option = document.createElement("option");
-      option.value = valor;
-      datalist.appendChild(option);
-    });
-  })
-  .catch(err => {
-    console.error("❌ Error al cargar el Excel:", err);
-  });
-        basesDesdeExcel = datos.slice(1).map(f => f[indice]).filter(Boolean);
+        console.log(`✅ Bases cargadas desde Excel: ${basesDesdeExcel.length}`);
 
         const datalist = document.getElementById("listaBases");
-        basesDesdeExcel.forEach(base => {
-          const opt = document.createElement("option");
-          opt.value = base;
-          datalist.appendChild(opt);
-        });
+        if (!datalist) {
+          console.warn("⚠️ No se encontró el datalist con id 'listaBases'");
+          return;
+        }
 
-        console.log("✅ Bases cargadas desde Excel:", basesDesdeExcel.length);
+        basesDesdeExcel.forEach(valor => {
+          const option = document.createElement("option");
+          option.value = valor;
+          datalist.appendChild(option);
+        });
+      })
+      .catch(err => {
+        console.error("❌ Error al cargar el Excel:", err);
       });
 
     function agregarFila() {
@@ -168,6 +169,7 @@ fetch("https://beluchiodini-sys.github.io/Nuevedieciseis/planillatecnica.xlsx")
 
       localStorage.setItem(id, JSON.stringify(carpetas[id]));
       const url = location.href.split("#")[0] + `#${encodeURIComponent(id)}`;
+      // Generar QR con QRious, asegúrate de incluir la librería QRious en tu proyecto
       new QRious({ element: canvas, value: url, size: 80 });
       mostrarCarpeta(id);
     }
@@ -276,5 +278,9 @@ fetch("https://beluchiodini-sys.github.io/Nuevedieciseis/planillatecnica.xlsx")
       }
     });
   </script>
+
+  <!-- Librería para generar QR (QRious), necesaria para que crearCarpeta funcione -->
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
 </body>
 </html>
+

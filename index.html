@@ -36,6 +36,70 @@
 
     const fichaOriginal = `RIGA 4742 ESTACION FLORES CORDOBA\n\nCP. :5000\nTEL. 3517726146\nCRISTIAN TABORDA@NUEVEDIECISEIS.COM.AR\n\nPLANILLA TÉCNICA\n\nEMPRESA:\nEQUIPO:\t\t\t\t\t\t\t\t\t\tINTERNO:\nMARCA MODELO:\t\t\t\t\t\t\t\t\tPATENTE:\nHORAS/KM:\nN. DE SERIE:\n\nMOTOR\nITEM\tDESCRIPCIÓN\tMARCA/MODELO\tCANTIDAD\n1\tACEITE\t\t\t\n2\tFILTRO ACEITE\t\t\t\n3\tFILTRO COMBUSTIBLE\t\t\t\n4\tFILTRO COMBUSTIBLE\t\t\t\n5\tFILTRO DE AIRE\t\t\t\n6\tFILTRO DE AIRE\t\t\t\n7\tCORREAS\t\t\t\n8\tREFRIGERANTE\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nTRANSMISIÓN\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nHIDRÁULICO\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nNEUMÁTICO\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nELÉCTRICO\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nTREN RODANTE\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nELEMENTOS DE DESGASTE\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nCABINA\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nCHASIS\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nVARIOS\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n`;
 
+    function agregarFila() {
+      const fila = document.createElement("tr");
+      const campos = ['equipo','interno','modelo','nroBase','horasBase','horasActuales'];
+      campos.forEach(campo => {
+        const td = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = campo.includes('Horas') ? "number" : "text";
+        td.appendChild(input);
+        fila.appendChild(td);
+      });
+
+      const servicioTd = document.createElement("td");
+      const select = document.createElement("select");
+      ['Motor','Transmisión','Hidráulico','Otro'].forEach(tipo => {
+        const opt = document.createElement("option");
+        opt.text = tipo;
+        select.add(opt);
+      });
+      servicioTd.appendChild(select);
+      fila.appendChild(servicioTd);
+
+      const qrTd = document.createElement("td");
+      const canvas = document.createElement("canvas");
+      canvas.width = 80;
+      canvas.height = 80;
+      qrTd.appendChild(canvas);
+      fila.appendChild(qrTd);
+
+      const btnTd = document.createElement("td");
+      const btn = document.createElement("button");
+      btn.textContent = "Crear carpeta";
+      btn.onclick = () => crearCarpeta(fila, canvas);
+      btnTd.appendChild(btn);
+      fila.appendChild(btnTd);
+
+      document.getElementById("tabla").appendChild(fila);
+    }
+
+    function crearCarpeta(fila, canvas) {
+      const inputs = fila.querySelectorAll("input");
+      const select = fila.querySelector("select");
+      const valores = [...inputs].map(i => i.value.trim());
+      const tipoServicio = select.value;
+      const id = `carpeta_${valores[3]}_${Date.now()}`;
+      const creado = Date.now();
+
+      carpetas[id] = {
+        equipo: valores[0],
+        interno: valores[1],
+        modelo: valores[2],
+        base: valores[3],
+        horasBase: valores[4],
+        servicio: tipoServicio,
+        creado,
+        acciones: [],
+        fichaEditable: fichaOriginal
+      };
+
+      localStorage.setItem(id, JSON.stringify(carpetas[id]));
+      const url = location.href.split("#")[0] + `#${encodeURIComponent(id)}`;
+      new QRious({ element: canvas, value: url, size: 80 });
+      mostrarCarpeta(id);
+    }
+
     function mostrarCarpeta(id) {
       const datos = carpetas[id];
       const div = document.createElement("div");
@@ -54,12 +118,86 @@
         <button onclick="descargarDocumento('${id}')">📥 Descargar documento</button>
         <button onclick="eliminarCarpeta('${id}')">🗑️ Eliminar carpeta</button>
         <ul id="hist_${id}"></ul>
-        <textarea id="ficha_${id}" class="editable-area">${fichaOriginal}</textarea>
+        <textarea id="ficha_${id}" class="editable-area" onchange="guardarFicha('${id}')">${datos.fichaEditable}</textarea>
       `;
       document.getElementById("carpetas").appendChild(div);
       iniciarCronometro(id, datos.creado);
       actualizarHistorial(id);
     }
+
+    function guardarAccion(id) {
+      const txt = document.getElementById(`txt_${id}`).value.trim();
+      if (!txt) return;
+      const fecha = new Date().toLocaleString();
+      carpetas[id].acciones.push(`${fecha}: ${txt}`);
+      document.getElementById(`txt_${id}`).value = "";
+      localStorage.setItem(id, JSON.stringify(carpetas[id]));
+      actualizarHistorial(id);
+    }
+
+    function guardarFicha(id) {
+      const area = document.getElementById(`ficha_${id}`);
+      if (area) {
+        carpetas[id].fichaEditable = area.value;
+        localStorage.setItem(id, JSON.stringify(carpetas[id]));
+      }
+    }
+
+    function actualizarHistorial(id) {
+      const ul = document.getElementById(`hist_${id}`);
+      ul.innerHTML = "";
+      carpetas[id].acciones.forEach((accion, i) => {
+        const li = document.createElement("li");
+        li.textContent = accion;
+        const btnBorrar = document.createElement("button");
+        btnBorrar.textContent = "🗑️";
+        btnBorrar.onclick = () => {
+          carpetas[id].acciones.splice(i, 1);
+          localStorage.setItem(id, JSON.stringify(carpetas[id]));
+          actualizarHistorial(id);
+        };
+        li.appendChild(btnBorrar);
+        ul.appendChild(li);
+      });
+    }
+
+    function iniciarCronometro(id, inicio) {
+      if (cronometrosActivos[id]) clearInterval(cronometrosActivos[id]);
+      const cronEl = document.getElementById(`cron_${id}`);
+      cronometrosActivos[id] = setInterval(() => {
+        const delta = Math.floor((Date.now() - inicio) / 1000);
+        const hh = String(Math.floor(delta / 3600)).padStart(2, '0');
+        const mm = String(Math.floor((delta % 3600) / 60)).padStart(2, '0');
+        const ss = String(delta % 60).padStart(2, '0');
+        cronEl.textContent = `${hh}:${mm}:${ss}`;
+      }, 1000);
+    }
+
+    function eliminarCarpeta(id) {
+      localStorage.removeItem(id);
+      delete carpetas[id];
+      const divs = document.querySelectorAll(".carpeta");
+      divs.forEach(div => {
+        if (div.innerHTML.includes(id)) div.remove();
+      });
+    }
+
+    window.addEventListener("load", () => {
+      const hash = location.hash.replace("#", "");
+      if (hash && localStorage.getItem(hash)) {
+        const datos = JSON.parse(localStorage.getItem(hash));
+        carpetas[hash] = datos;
+        mostrarCarpeta(hash);
+      } else {
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith("carpeta_")) {
+            const datos = JSON.parse(localStorage.getItem(key));
+            carpetas[key] = datos;
+            mostrarCarpeta(key);
+          }
+        });
+      }
+    });
   </script>
 </body>
 </html>

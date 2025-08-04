@@ -18,76 +18,87 @@
     .resaltar-verde { background-color: #ccffcc !important; }
     .resaltar-amarillo { background-color: #ffffcc !important; }
     .editable-area { width: 100%; height: 500px; white-space: pre-wrap; background: #fff; border: 1px solid #ccc; padding: 10px; font-family: monospace; margin-top: 10px; }
+    .formulario-inicial { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .formulario-inicial label { font-weight: bold; display: block; margin-bottom: 4px; }
+    .formulario-inicial input { width: 100%; padding: 6px; }
   </style>
 </head>
 <body>
   <h2>NUEVEDIECISEIS <span id="reloj">⏱</span></h2>
-  <table id="tabla">
-    <tr>
-      <th>Equipo</th><th>Interno</th><th>Modelo</th><th>N° Base</th><th>Horas Base</th><th>Horas Actuales</th><th>Servicio</th><th>QR</th><th>Acción</th>
-    </tr>
-  </table>
-  <button onclick="agregarFila()">Agregar fila</button>
+
+  <div class="formulario-inicial">
+    <div>
+      <label>EMPRESA:</label>
+      <input id="empresa" type="text" />
+    </div>
+    <div></div>
+    <div>
+      <label>EQUIPO:</label>
+      <input id="equipo" type="text" />
+    </div>
+    <div>
+      <label>INTERNO:</label>
+      <input id="interno" type="text" />
+    </div>
+    <div>
+      <label>MARCA MODELO:</label>
+      <input id="modelo" type="text" />
+    </div>
+    <div>
+      <label>PATENTE:</label>
+      <input id="patente" type="text" />
+    </div>
+    <div>
+      <label>HORAS/KM:</label>
+      <input id="horas" type="text" />
+    </div>
+    <div>
+      <label>N. DE SERIE:</label>
+      <input id="serie" type="text" />
+    </div>
+    <div>
+      <label>SERVICIO:</label>
+      <select id="servicio">
+        <option>Motor</option>
+        <option>Transmisión</option>
+        <option>Hidráulico</option>
+        <option>Otro</option>
+      </select>
+    </div>
+    <div>
+      <label>&nbsp;</label>
+      <button onclick="crearCarpetaDesdeFormulario()">Crear Carpeta</button>
+    </div>
+  </div>
+
   <div id="carpetas"></div>
 
   <script>
     const carpetas = {};
     const cronometrosActivos = {};
 
-    const fichaOriginal = `RIGA 4742 ESTACION FLORES CORDOBA\n\nCP. :5000\nTEL. 3517726146\nCRISTIAN TABORDA@NUEVEDIECISEIS.COM.AR\n\nPLANILLA TÉCNICA\n\nEMPRESA:\nEQUIPO:\t\t\t\t\t\t\t\t\t\tINTERNO:\nMARCA MODELO:\t\t\t\t\t\t\t\t\tPATENTE:\nHORAS/KM:\nN. DE SERIE:\n\nMOTOR\nITEM\tDESCRIPCIÓN\tMARCA/MODELO\tCANTIDAD\n1\tACEITE\t\t\t\n2\tFILTRO ACEITE\t\t\t\n3\tFILTRO COMBUSTIBLE\t\t\t\n4\tFILTRO COMBUSTIBLE\t\t\t\n5\tFILTRO DE AIRE\t\t\t\n6\tFILTRO DE AIRE\t\t\t\n7\tCORREAS\t\t\t\n8\tREFRIGERANTE\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nTRANSMISIÓN\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nHIDRÁULICO\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nNEUMÁTICO\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nELÉCTRICO\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nTREN RODANTE\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nELEMENTOS DE DESGASTE\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nCABINA\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nCHASIS\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n\nVARIOS\n1\t\t\t\t\n2\t\t\t\t\n3\t\t\t\t\n4\t\t\t\t\n5\t\t\t\t\n6\t\t\t\t\n7\t\t\t\t\n8\t\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n`;
+    const fichaOriginal = `RIGA 4742 ESTACION FLORES CORDOBA\n\nCP. :5000\nTEL. 3517726146\nCRISTIAN TABORDA@NUEVEDIECISEIS.COM.AR\n\nPLANILLA TÉCNICA\n\nEMPRESA:\nEQUIPO:\t\t\t\t\t\t\t\t\t\tINTERNO:\nMARCA MODELO:\t\t\t\t\t\t\t\t\tPATENTE:\nHORAS/KM:\nN. DE SERIE:\n\nMOTOR\nITEM\tDESCRIPCIÓN\tMARCA/MODELO\tCANTIDAD\n1\tACEITE\t\t\t\n2\tFILTRO ACEITE\t\t\t\n3\tFILTRO COMBUSTIBLE\t\t\t\n4\tFILTRO COMBUSTIBLE\t\t\t\n5\tFILTRO DE AIRE\t\t\t\n6\tFILTRO DE AIRE\t\t\t\n7\tCORREAS\t\t\t\n8\tREFRIGERANTE\t\t\t\n9\t\t\t\t\n10\t\t\t\t\n... (continúa)`;
 
-    function agregarFila() {
-      const fila = document.createElement("tr");
-      const campos = ['equipo','interno','modelo','nroBase','horasBase','horasActuales'];
-      campos.forEach(campo => {
-        const td = document.createElement("td");
-        const input = document.createElement("input");
-        input.type = campo.includes('Horas') ? "number" : "text";
-        td.appendChild(input);
-        fila.appendChild(td);
-      });
-
-      const servicioTd = document.createElement("td");
-      const select = document.createElement("select");
-      ['Motor','Transmisión','Hidráulico','Otro'].forEach(tipo => {
-        const opt = document.createElement("option");
-        opt.text = tipo;
-        select.add(opt);
-      });
-      servicioTd.appendChild(select);
-      fila.appendChild(servicioTd);
-
-      const qrTd = document.createElement("td");
-      const canvas = document.createElement("canvas");
-      canvas.width = 80;
-      canvas.height = 80;
-      qrTd.appendChild(canvas);
-      fila.appendChild(qrTd);
-
-      const btnTd = document.createElement("td");
-      const btn = document.createElement("button");
-      btn.textContent = "Crear carpeta";
-      btn.onclick = () => crearCarpeta(fila, canvas);
-      btnTd.appendChild(btn);
-      fila.appendChild(btnTd);
-
-      document.getElementById("tabla").appendChild(fila);
-    }
-
-    function crearCarpeta(fila, canvas) {
-      const inputs = fila.querySelectorAll("input");
-      const select = fila.querySelector("select");
-      const valores = [...inputs].map(i => i.value.trim());
-      const tipoServicio = select.value;
-      const id = `carpeta_${valores[3]}_${Date.now()}`;
+    function crearCarpetaDesdeFormulario() {
+      const equipo = document.getElementById('equipo').value;
+      const interno = document.getElementById('interno').value;
+      const modelo = document.getElementById('modelo').value;
+      const base = document.getElementById('patente').value;
+      const horas = document.getElementById('horas').value;
+      const serie = document.getElementById('serie').value;
+      const empresa = document.getElementById('empresa').value;
+      const tipoServicio = document.getElementById('servicio').value;
+      const id = `carpeta_${base}_${Date.now()}`;
       const creado = Date.now();
 
       carpetas[id] = {
-        equipo: valores[0],
-        interno: valores[1],
-        modelo: valores[2],
-        base: valores[3],
-        horasBase: valores[4],
+        empresa,
+        equipo,
+        interno,
+        modelo,
+        base,
+        horasBase: horas,
+        serie,
         servicio: tipoServicio,
         creado,
         acciones: [],
@@ -95,8 +106,6 @@
       };
 
       localStorage.setItem(id, JSON.stringify(carpetas[id]));
-      const url = location.href.split("#")[0] + `#${encodeURIComponent(id)}`;
-      new QRious({ element: canvas, value: url, size: 80 });
       mostrarCarpeta(id);
     }
 
@@ -106,13 +115,15 @@
       div.className = "carpeta";
       div.innerHTML = `
         <h3>📁 Carpeta: ${id}</h3>
-        <p><strong>Equipo:</strong> ${datos.equipo}</p>
-        <p><strong>Interno:</strong> ${datos.interno}</p>
-        <p><strong>Modelo:</strong> ${datos.modelo}</p>
-        <p><strong>N° Base:</strong> ${datos.base}</p>
-        <p><strong>Horas Base:</strong> ${datos.horasBase}</p>
-        <p><strong>Servicio:</strong> ${datos.servicio}</p>
-        <p><strong>Horas Actuales:</strong> <span id="cron_${id}" class="cronometro">00:00:00</span></p>
+        <p><strong>EMPRESA:</strong> ${datos.empresa}</p>
+        <p><strong>EQUIPO:</strong> ${datos.equipo}</p>
+        <p><strong>INTERNO:</strong> ${datos.interno}</p>
+        <p><strong>MARCA MODELO:</strong> ${datos.modelo}</p>
+        <p><strong>PATENTE (N° BASE):</strong> ${datos.base}</p>
+        <p><strong>HORAS/KM:</strong> ${datos.horasBase}</p>
+        <p><strong>N. DE SERIE:</strong> ${datos.serie}</p>
+        <p><strong>SERVICIO:</strong> ${datos.servicio}</p>
+        <p><strong>TIEMPO ACTUAL:</strong> <span id="cron_${id}" class="cronometro">00:00:00</span></p>
         <textarea id="txt_${id}" placeholder="Escribir acción..."></textarea>
         <button onclick="guardarAccion('${id}')">💾 Guardar acción</button>
         <button onclick="descargarDocumento('${id}')">📥 Descargar documento</button>
@@ -182,25 +193,9 @@
       });
     }
 
-    window.addEventListener("load", () => {
-      const hash = location.hash.replace("#", "");
-      if (hash && localStorage.getItem(hash)) {
-        const datos = JSON.parse(localStorage.getItem(hash));
-        carpetas[hash] = datos;
-        mostrarCarpeta(hash);
-      } else {
-        Object.keys(localStorage).forEach(key => {
-          if (key.startsWith("carpeta_")) {
-            const datos = JSON.parse(localStorage.getItem(key));
-            carpetas[key] = datos;
-            mostrarCarpeta(key);
-          }
-        });
-      }
-    });
+    setInterval(() => {
+      document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
+    }, 1000);
   </script>
-</body>
-</html>
-
 </body>
 </html>

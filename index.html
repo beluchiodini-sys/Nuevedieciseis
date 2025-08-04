@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>NUEVEDIECISEIS</title>
+  <title></title>
   <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
@@ -24,7 +24,7 @@
   </style>
 </head>
 <body>
-  <h2>NUEVEDIECISEIS <span id="reloj">⏱</span></h2>
+  
 
   <div class="formulario-inicial">
     <div>
@@ -111,6 +111,7 @@
 
     function mostrarCarpeta(id) {
       const datos = carpetas[id];
+      document.title = datos.equipo;
       const div = document.createElement("div");
       div.className = "carpeta";
       div.innerHTML = `
@@ -199,3 +200,4 @@
   </script>
 </body>
 </html>
+

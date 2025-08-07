@@ -5,12 +5,40 @@
   <title>NUEVEDIECISEIS</title>
   <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
-    h2 { display: flex; justify-content: space-between; align-items: center; }
-    canvas { margin-top: 10px; }
-    pre { white-space: pre-wrap; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 5px #ccc; }
-    button { padding: 10px 20px; margin-top: 10px; display: block; }
-    .qr-container { margin: 20px 0; }
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f4f6f8;
+    }
+    h2 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    canvas {
+      margin-top: 10px;
+      background: white;
+    }
+    textarea {
+      width: 100%;
+      height: 400px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px #ccc;
+      font-family: monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      display: block;
+      cursor: pointer;
+    }
+    .qr-container {
+      margin: 20px 0;
+    }
   </style>
 </head>
 <body>
@@ -21,14 +49,12 @@
 </h2>
 
 <div class="qr-container">
-  <canvas id="qr"></canvas>
+  <canvas id="qr" width="200" height="200"></canvas>
   <button onclick="descargarQR()">📥 Descargar QR</button>
 </div>
 
-<pre id="plantilla"></pre>
-
-<script>
-  const plantillaTecnica = `RIGA 4742 ESTACION FLORES CORDOBA
+<textarea id="plantilla">
+RIGA 4742 ESTACION FLORES CORDOBA
 
 CP. :5000
 TEL. 3517726146
@@ -53,29 +79,37 @@ ITEM	DESCRIPCIÓN	MARCA/MODELO	CANTIDAD
 
 ... (agregá más ítems si querés) ...
 
-FIN DE PLANILLA`;
+FIN DE PLANILLA
+</textarea>
 
-  // Mostrar plantilla
-  document.getElementById("plantilla").textContent = plantillaTecnica;
+<button onclick="descargarTexto()">📄 Descargar Planilla Técnica</button>
 
-  // Generar QR al iniciar
-  const url = location.href;
-  new QRious({
-    element: document.getElementById("qr"),
-    value: url,
-    size: 150,
+<script>
+  const canvas = document.getElementById("qr");
+  const qr = new QRious({
+    element: canvas,
+    value: location.href,
+    size: 200,
+    background: 'white',
+    foreground: 'black'
   });
 
-  // Descargar QR
   function descargarQR() {
-    const canvas = document.getElementById("qr");
     const enlace = document.createElement("a");
-    enlace.href = canvas.toDataURL("image/png");
+    enlace.href = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
     enlace.download = "QR_NUEVEDIECISEIS.png";
     enlace.click();
   }
 
-  // Reloj
+  function descargarTexto() {
+    const contenido = document.getElementById("plantilla").value;
+    const blob = new Blob([contenido], { type: "text/plain" });
+    const enlace = document.createElement("a");
+    enlace.href = URL.createObjectURL(blob);
+    enlace.download = "planilla_tecnica.txt";
+    enlace.click();
+  }
+
   setInterval(() => {
     document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
   }, 1000);

@@ -39,6 +39,15 @@
     .qr-container {
       margin: 20px 0;
     }
+    .alerta {
+      font-weight: bold;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+    }
+    .verde { background-color: lightgreen; }
+    .amarillo { background-color: yellow; }
+    .rojo { background-color: tomato; }
   </style>
 </head>
 <body>
@@ -53,38 +62,30 @@
   <button onclick="descargarQR()">📥 Descargar QR</button>
 </div>
 
-<textarea id="plantilla">
-RIGA 4742 ESTACION FLORES CORDOBA
-
-CP. :5000
-TEL. 3517726146
-CRISTIAN TABORDA@NUEVEDIECISEIS.COM.AR
-
-PLANILLA TÉCNICA
-
-EMPRESA: NUEVEDIECISEIS
-EQUIPO: EXCAVADORA 329D    INTERNO: 14
-MARCA MODELO: CATERPILLAR 329D     PATENTE: AE572QK
-HORAS/KM: 10894
-N. DE SERIE: CAT0329DVTAH01453
-
-MOTOR
-ITEM	DESCRIPCIÓN	MARCA/MODELO	CANTIDAD
-1	ACEITE	CAT	20 LTS
-2	FILTRO ACEITE	CAT	1
-3	FILTRO COMBUSTIBLE	CAT	2
-4	FILTRO DE AIRE	CAT	2
-5	CORREAS	CAT	1
-6	REFRIGERANTE	SHELL	20 LTS
-
-... (agregá más ítems si querés) ...
-
-FIN DE PLANILLA
-</textarea>
+<textarea id="plantilla"></textarea>
 
 <button onclick="descargarTexto()">📄 Descargar Planilla Técnica</button>
 
+<h3>Control de Horas</h3>
+<label>Horas de la máquina: <input type="number" id="horaMaquina" /></label><br />
+<label>Hora actual: <input type="number" id="horaActual" /></label><br />
+<button onclick="verificarHoras()">Verificar Horas</button>
+<div id="alerta"></div>
+
 <script>
+  const plantilla = document.getElementById("plantilla");
+
+  // Restaurar contenido si existe
+  if (localStorage.getItem("plantilla")) {
+    plantilla.value = localStorage.getItem("plantilla");
+  } else {
+    plantilla.value = `PLANILLA TÉCNICA\nEscriba aquí...`;
+  }
+
+  plantilla.addEventListener("input", () => {
+    localStorage.setItem("plantilla", plantilla.value);
+  });
+
   const canvas = document.getElementById("qr");
   const qr = new QRious({
     element: canvas,
@@ -102,7 +103,7 @@ FIN DE PLANILLA
   }
 
   function descargarTexto() {
-    const contenido = document.getElementById("plantilla").value;
+    const contenido = plantilla.value;
     const blob = new Blob([contenido], { type: "text/plain" });
     const enlace = document.createElement("a");
     enlace.href = URL.createObjectURL(blob);
@@ -113,6 +114,29 @@ FIN DE PLANILLA
   setInterval(() => {
     document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
   }, 1000);
+
+  function verificarHoras() {
+    const horaMaquina = parseFloat(document.getElementById("horaMaquina").value);
+    const horaActual = parseFloat(document.getElementById("horaActual").value);
+    const total = horaMaquina + horaActual;
+    const alerta = document.getElementById("alerta");
+
+    alerta.innerHTML = "";
+    alerta.className = "alerta";
+
+    if (total >= 250 && total < 300) {
+      alerta.innerText = "⚠️ MOTOR (250h)";
+      alerta.classList.add("verde");
+    } else if (total >= 1000 && total < 1050) {
+      alerta.innerText = "⚠️ TRANSMISIÓN (1000h)";
+      alerta.classList.add("amarillo");
+    } else if (total >= 2000 && total < 2050) {
+      alerta.innerText = "⚠️ HIDRÁULICO (2000h)";
+      alerta.classList.add("rojo");
+    } else {
+      alerta.className = "";
+    }
+  }
 </script>
 
 </body>

@@ -2,25 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>NUEVEDIECISEIS - Fichas Técnicas</title>
-<script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
-  window.addEventListener("DOMContentLoaded", () => {
-    let carpetaHash = decodeURIComponent(location.hash.slice(1));
-    for (let i = 0; i < localStorage.length; i++) {
-      const clave = localStorage.key(i);
-      if (clave.startsWith("/Nuevedieciseis:carpeta_")) {
-        const datos = JSON.parse(localStorage.getItem(clave));
-        const cleanKey = clave.replace("/Nuevedieciseis:", "");
-        carpetas[cleanKey] = datos;
-        mostrarCarpeta(cleanKey);
-      }
-    }
-    if (carpetaHash && carpetas[carpetaHash]) {
-      document.getElementById(`qr_${carpetaHash}`)?.scrollIntoView({ behavior: "smooth" });
-    }
-  });
-
-</script>
+  <title>NUEVEDIECISEIS</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
     h2 { display: flex; justify-content: space-between; }
@@ -31,63 +14,16 @@
     canvas { margin-top: 5px; }
     .carpeta { margin-top: 20px; padding: 15px; background: #eef; border-radius: 8px; }
     .cronometro { font-weight: bold; color: #007700; font-size: 1.1em; }
-    .resaltar-rojo { background-color: #ffcccc !important; }
-    .resaltar-verde { background-color: #ccffcc !important; }
-    .resaltar-amarillo { background-color: #ffffcc !important; }
     .editable-area { width: 100%; height: 500px; white-space: pre-wrap; background: #fff; border: 1px solid #ccc; padding: 10px; font-family: monospace; margin-top: 10px; }
     .formulario-inicial { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
     .formulario-inicial label { font-weight: bold; display: block; margin-bottom: 4px; }
     .formulario-inicial input { width: 100%; padding: 6px; }
   </style>
-<script>
-const carpetas = {};
-
-function mostrarCarpeta(id) {
-  const datos = carpetas[id];
-  const url = location.href.split("#")[0] + "#" + encodeURIComponent(id);
-
-  const div = document.createElement("div");
-  div.className = "carpeta";
-  div.innerHTML = `
-    <h3>📁 Carpeta: ${datos.equipo || "Sin nombre"}</h3>
-    <canvas id="qr_${id}" width="200" height="200"></canvas>
-    <textarea id="ficha_${id}" class="editable-area">${datos.fichaEditable}</textarea>
-  `;
-
-  new QRious({
-    element: document.getElementById(`qr_${id}`),
-    value: url,
-    size: 200
-  });
-
-  document.getElementById("carpetas").appendChild(div);
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  // ⏱ Cronómetro
-  setInterval(() => {
-    const reloj = document.getElementById("reloj");
-    if (reloj) reloj.textContent = "⏱ " + new Date().toLocaleTimeString();
-  }, 1000);
-
-  // 📂 Cargar carpetas desde localStorage
-  Object.keys(localStorage).forEach(id => {
-    if (id.startsWith("carpeta_")) {
-      try {
-        const datos = JSON.parse(localStorage.getItem(id));
-        carpetas[id] = datos;
-        mostrarCarpeta(id);
-      } catch (e) {
-        console.warn("⚠️ Carpeta con error:", id);
-      }
-    }
-  });
-});
-</script>
-
 </head>
 <body>
+
   <h2>NUEVEDIECISEIS <span id="reloj">⏱</span></h2>
+
   <div class="formulario-inicial">
     <div><label>EMPRESA:</label><input id="empresa" type="text" /></div>
     <div></div>
@@ -97,7 +33,8 @@ window.addEventListener("DOMContentLoaded", () => {
     <div><label>PATENTE:</label><input id="patente" type="text" /></div>
     <div><label>HORAS/KM:</label><input id="horas" type="text" /></div>
     <div><label>N. DE SERIE:</label><input id="serie" type="text" /></div>
-    <div><label>SERVICIO:</label>
+    <div>
+      <label>SERVICIO:</label>
       <select id="servicio">
         <option>Motor</option>
         <option>Transmisión</option>
@@ -105,19 +42,19 @@ window.addEventListener("DOMContentLoaded", () => {
         <option>Otro</option>
       </select>
     </div>
-    <div><label>&nbsp;</label><button onclick="crearCarpetaDesdeFormulario()">Crear Carpeta</button></div>
+    <div>
+      <label>&nbsp;</label>
+      <button onclick="crearCarpetaDesdeFormulario()">Crear Carpeta</button>
+    </div>
   </div>
+
   <div id="carpetas"></div>
+
   <script>
     const carpetas = {};
     const cronometrosActivos = {};
-    const fichaOriginal = `RIGA 4742 ESTACION FLORES CORDOBA
 
-CP. :5000
-TEL. 3517726146
-CRISTIAN TABORDA@NUEVEDIECISEIS.COM.AR
-
-PLANILLA TÉCNICA
+    const fichaOriginal = `PLANILLA TÉCNICA
 
 EMPRESA:
 EQUIPO:										INTERNO:
@@ -244,7 +181,7 @@ VARIOS
 7				
 8				
 9				
-10				`; 
+10				`;
 
     function crearCarpetaDesdeFormulario() {
       const equipo = document.getElementById('equipo').value;
@@ -259,9 +196,17 @@ VARIOS
       const creado = Date.now();
 
       carpetas[id] = {
-        empresa, equipo, interno, modelo, base,
-        horasBase: horas, serie, servicio: tipoServicio,
-        creado, acciones: [], fichaEditable: fichaOriginal
+        empresa,
+        equipo,
+        interno,
+        modelo,
+        base,
+        horasBase: horas,
+        serie,
+        servicio: tipoServicio,
+        creado,
+        acciones: [],
+        fichaEditable: fichaOriginal
       };
 
       localStorage.setItem(id, JSON.stringify(carpetas[id]));
@@ -286,27 +231,13 @@ VARIOS
         <p><strong>N. DE SERIE:</strong> ${datos.serie}</p>
         <p><strong>SERVICIO:</strong> ${datos.servicio}</p>
         <p><strong>TIEMPO ACTUAL:</strong> <span id="cron_${id}" class="cronometro">00:00:00</span></p>
-        <textarea id="txt_${id}" placeholder="Escribir acción..."></textarea>
-        <button onclick="guardarAccion('${id}')">💾 Guardar acción</button>
-        <button onclick="descargarDocumento('${id}')">📥 Descargar documento</button>
+        <textarea id="ficha_${id}" class="editable-area" onchange="guardarFicha('${id}')">${datos.fichaEditable}</textarea>
         <button onclick="descargarQR('${id}')">📷 Descargar QR</button>
         <button onclick="eliminarCarpeta('${id}')">🗑️ Eliminar carpeta</button>
-        <ul id="hist_${id}"></ul>
-        <textarea id="ficha_${id}" class="editable-area" onchange="guardarFicha('${id}')">${datos.fichaEditable}</textarea>`;
+      `;
       new QRious({ element: document.getElementById(`qr_${id}`), value: url, size: 100 });
       document.getElementById("carpetas").appendChild(div);
       iniciarCronometro(id, datos.creado);
-      actualizarHistorial(id);
-    }
-
-    function guardarAccion(id) {
-      const txt = document.getElementById(`txt_${id}`).value.trim();
-      if (!txt) return;
-      const fecha = new Date().toLocaleString();
-      carpetas[id].acciones.push(`${fecha}: ${txt}`);
-      document.getElementById(`txt_${id}`).value = "";
-      localStorage.setItem(id, JSON.stringify(carpetas[id]));
-      actualizarHistorial(id);
     }
 
     function guardarFicha(id) {
@@ -315,24 +246,6 @@ VARIOS
         carpetas[id].fichaEditable = area.value;
         localStorage.setItem(id, JSON.stringify(carpetas[id]));
       }
-    }
-
-    function actualizarHistorial(id) {
-      const ul = document.getElementById(`hist_${id}`);
-      ul.innerHTML = "";
-      carpetas[id].acciones.forEach((accion, i) => {
-        const li = document.createElement("li");
-        li.textContent = accion;
-        const btnBorrar = document.createElement("button");
-        btnBorrar.textContent = "🗑️";
-        btnBorrar.onclick = () => {
-          carpetas[id].acciones.splice(i, 1);
-          localStorage.setItem(id, JSON.stringify(carpetas[id]));
-          actualizarHistorial(id);
-        };
-        li.appendChild(btnBorrar);
-        ul.appendChild(li);
-      });
     }
 
     function iniciarCronometro(id, inicio) {
@@ -349,25 +262,11 @@ VARIOS
     }
 
     function descargarQR(id) {
-      const datos = carpetas[id];
-      if (!datos) return;
-
-      const url = location.href.split("#")[0] + `#${encodeURIComponent(id)}`;
-
-      // Crear un nuevo canvas temporal para forzar el dibujo correcto
-      const canvasTemp = document.createElement("canvas");
-      canvasTemp.width = 200;
-      canvasTemp.height = 200;
-
-      const qr = new QRious({
-        element: canvasTemp,
-        value: url,
-        size: 200
-      });
-
+      const canvas = document.getElementById(`qr_${id}`);
+      if (!canvas) return;
       const enlace = document.createElement("a");
-      enlace.href = canvasTemp.toDataURL("image/png");
-      enlace.download = `${datos.equipo}_QR.png`;
+      enlace.href = canvas.toDataURL("image/png");
+      enlace.download = `${carpetas[id].equipo}_QR.png`;
       enlace.click();
     }
 
@@ -380,53 +279,9 @@ VARIOS
       });
     }
 
-    // Reloj en el header
     setInterval(() => {
       document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
     }, 1000);
-
-    // Recuperar carpetas al cargar la página
-    window.addEventListener("DOMContentLoaded", () => {
-      for (let i = 0; i < localStorage.length; i++) {
-        const clave = localStorage.key(i);
-        if (clave.startsWith("carpeta_")) {
-          const datos = JSON.parse(localStorage.getItem(clave));
-          carpetas[clave] = datos;
-          mostrarCarpeta(clave);
-        }
-      }
-    });
-  
-  window.addEventListener("DOMContentLoaded", () => {
-    let carpetaHash = decodeURIComponent(location.hash.slice(1));
-    for (let i = 0; i < localStorage.length; i++) {
-      const clave = localStorage.key(i);
-      if (clave.startsWith("/Nuevedieciseis:carpeta_")) {
-        const datos = JSON.parse(localStorage.getItem(clave));
-        const cleanKey = clave.replace("/Nuevedieciseis:", "");
-        carpetas[cleanKey] = datos;
-        mostrarCarpeta(cleanKey);
-      }
-    }
-    if (carpetaHash && carpetas[carpetaHash]) {
-      document.getElementById(`qr_${carpetaHash}`)?.scrollIntoView({ behavior: "smooth" });
-    }
-  });
-    
-// 🔄 Al cargar la página, mostrar carpetas guardadas
-window.addEventListener("DOMContentLoaded", () => {
-  Object.keys(localStorage).forEach(id => {
-    if (id.startsWith("carpeta_")) {
-      try {
-        carpetas[id] = JSON.parse(localStorage.getItem(id));
-        mostrarCarpeta(id);
-      } catch (e) {
-        console.warn("Error cargando carpeta:", id);
-      }
-    }
-  });
-});
-
-</script>
+  </script>
 </body>
 </html>

@@ -179,6 +179,20 @@ function eliminarCarpeta(id) {
 setInterval(() => {
   document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
 }, 1000);
+  // 🔄 Al cargar la página, mostrar carpetas guardadas
+window.addEventListener("DOMContentLoaded", () => {
+  Object.keys(localStorage).forEach(id => {
+    if (id.startsWith("carpeta_")) {
+      try {
+        carpetas[id] = JSON.parse(localStorage.getItem(id));
+        mostrarCarpeta(id);
+      } catch (e) {
+        console.warn("Error cargando carpeta:", id);
+      }
+    }
+  });
+});
+
 </script>
 
 </body>

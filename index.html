@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>NUEVEDIECISEIS - Fichas Técnicas</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js">
+<script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
   window.addEventListener("DOMContentLoaded", () => {
     let carpetaHash = decodeURIComponent(location.hash.slice(1));
     for (let i = 0; i < localStorage.length; i++) {
@@ -39,26 +39,50 @@
     .formulario-inicial label { font-weight: bold; display: block; margin-bottom: 4px; }
     .formulario-inicial input { width: 100%; padding: 6px; }
   </style>
+<script>
+const carpetas = {};
 
-<script type="module">
-  import 'https://tomashubelbauer.github.io/github-pages-local-storage/index.js';
+function mostrarCarpeta(id) {
+  const datos = carpetas[id];
+  const url = location.href.split("#")[0] + "#" + encodeURIComponent(id);
 
-  window.addEventListener("DOMContentLoaded", () => {
-    let carpetaHash = decodeURIComponent(location.hash.slice(1));
-    for (let i = 0; i < localStorage.length; i++) {
-      const clave = localStorage.key(i);
-      if (clave.startsWith("/Nuevedieciseis:carpeta_")) {
-        const datos = JSON.parse(localStorage.getItem(clave));
-        const cleanKey = clave.replace("/Nuevedieciseis:", "");
-        carpetas[cleanKey] = datos;
-        mostrarCarpeta(cleanKey);
-      }
-    }
-    if (carpetaHash && carpetas[carpetaHash]) {
-      document.getElementById(`qr_${carpetaHash}`)?.scrollIntoView({ behavior: "smooth" });
-    }
+  const div = document.createElement("div");
+  div.className = "carpeta";
+  div.innerHTML = `
+    <h3>📁 Carpeta: ${datos.equipo || "Sin nombre"}</h3>
+    <canvas id="qr_${id}" width="200" height="200"></canvas>
+    <textarea id="ficha_${id}" class="editable-area">${datos.fichaEditable}</textarea>
+  `;
+
+  new QRious({
+    element: document.getElementById(`qr_${id}`),
+    value: url,
+    size: 200
   });
 
+  document.getElementById("carpetas").appendChild(div);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  // ⏱ Cronómetro
+  setInterval(() => {
+    const reloj = document.getElementById("reloj");
+    if (reloj) reloj.textContent = "⏱ " + new Date().toLocaleTimeString();
+  }, 1000);
+
+  // 📂 Cargar carpetas desde localStorage
+  Object.keys(localStorage).forEach(id => {
+    if (id.startsWith("carpeta_")) {
+      try {
+        const datos = JSON.parse(localStorage.getItem(id));
+        carpetas[id] = datos;
+        mostrarCarpeta(id);
+      } catch (e) {
+        console.warn("⚠️ Carpeta con error:", id);
+      }
+    }
+  });
+});
 </script>
 
 </head>

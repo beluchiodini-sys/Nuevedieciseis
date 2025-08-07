@@ -57,9 +57,16 @@
   <span id="reloj">⏱</span>
 </h2>
 
+<input id="nombre-equipo" placeholder="🔧 Nombre del equipo" />
+
 <div class="qr-container">
-  <canvas id="qr" width="200" height="200"></canvas>
-  <button onclick="descargarQR()">📥 Descargar QR</button>
+  <canvas id="qr-app" width="200" height="200"></canvas>
+  <button onclick="descargarQRApp()">📥 QR App (Crear nuevas)</button>
+</div>
+
+<div class="qr-container">
+  <canvas id="qr-ficha" width="200" height="200"></canvas>
+  <button onclick="descargarQRFicha()">📥 QR Ficha Técnica</button>
 </div>
 
 <textarea id="plantilla"></textarea>
@@ -67,42 +74,116 @@
 <button onclick="descargarTexto()">📄 Descargar Planilla Técnica</button>
 
 <h3>Control de Horas</h3>
-<label for="horaMaquina">Horas del equipo:</label>
-<input type="number" id="horaMaquina" placeholder="Ej: 10894">
-
-<label for="horaActual">Horas actuales:</label>
-<input type="number" id="horaActual" placeholder="Ej: 3">
-
-<button onclick="verificarHoras()">✅ Verificar Horas</button>
-<div id="alerta"></div>
+<div id="info-horas"></div>
 
 <script>
   const plantilla = document.getElementById("plantilla");
+  const nombreEquipo = document.getElementById("nombre-equipo");
 
-  // Restaurar contenido si existe
-  if (localStorage.getItem("plantilla")) {
-    plantilla.value = localStorage.getItem("plantilla");
+  const inicioHoras = localStorage.getItem("inicioHoras")
+    ? parseFloat(localStorage.getItem("inicioHoras"))
+    : Date.now();
+  localStorage.setItem("inicioHoras", inicioHoras);
+
+  function horasTranscurridasDesde(timestamp) {
+    return Math.floor((Date.now() - timestamp) / (1000 * 60 * 60));
+  }
+
+  const horasDesdeInicio = horasTranscurridasDesde(inicioHoras);
+  const inicioFecha = new Date(inicioHoras).toLocaleString();
+
+  const plantillaRegex = /Inicio registrado: .*?\nHoras transcurridas: \d+/;
+  const nuevaCabecera = `Inicio registrado: ${inicioFecha}\nHoras transcurridas: ${horasDesdeInicio}`;
+
+  if (!localStorage.getItem("plantilla")) {
+    plantilla.value = `PLANILLA TÉCNICA\n\nInicio registrado: ${inicioFecha}\nHoras transcurridas: ${horasDesdeInicio}\n\n(Escriba aquí...)`;
   } else {
-    plantilla.value = `PLANILLA TÉCNICA\nEscriba aquí...`;
+    plantilla.value = localStorage.getItem("plantilla");
+    if (plantillaRegex.test(plantilla.value)) {
+      plantilla.value = plantilla.value.replace(plantillaRegex, nuevaCabecera);
+    }
   }
 
   plantilla.addEventListener("input", () => {
     localStorage.setItem("plantilla", plantilla.value);
   });
 
-  const canvas = document.getElementById("qr");
-  const qr = new QRious({
-    element: canvas,
-    value: location.href,
+  nombreEquipo.addEventListener("input", () => {
+    localStorage.setItem("nombreEquipo", nombreEquipo.value);
+  });
+
+  if (localStorage.getItem("nombreEquipo")) {
+    nombreEquipo.value = localStorage.getItem("nombreEquipo");
+  }
+
+  const infoHoras = document.getElementById("info-horas");
+  const alerta = document.createElement("div");
+  alerta.className = "alerta";
+  infoHoras.innerHTML = `Horas desde creación: <strong>${horasDesdeInicio}</strong>`;
+  infoHoras.appendChild(alerta);
+
+  function enviarAlerta(tipo, color) {
+    alerta.innerText = `⚠️ ${tipo.toUpperCase()} (${horasDesdeInicio}h)`;
+    alerta.classList.add(color);
+
+    const tag = `[ALERTA: ${tipo.toUpperCase()} - ${horasDesdeInicio}h]`;
+    if (!plantilla.value.includes(tag)) {
+      plantilla.value += `\n\n${tag}`;
+    }
+
+    const numero = plantilla.value.match(/\b\d{7,}\b/);
+    const email = plantilla.value.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+    if (numero) console.log(`📱 Enviando alerta a número: ${numero[0]}`);
+    if (email) console.log(`📧 Enviando alerta a email: ${email[0]}`);
+  }
+
+  if (horasDesdeInicio >= 250 && horasDesdeInicio < 300) {
+    enviarAlerta("MOTOR", "verde");
+  } else if (horasDesdeInicio >= 1000 && horasDesdeInicio < 1050) {
+    enviarAlerta("TRANSMISIÓN", "amarillo");
+  } else if (horasDesdeInicio >= 2000 && horasDesdeInicio < 2050) {
+    enviarAlerta("HIDRÁULICO", "rojo");
+  }
+
+  // QR de la app (para crear nuevas planillas)
+  const canvasApp = document.getElementById("qr-app");
+  const qrApp = new QRious({
+    element: canvasApp,
+    value: location.origin + location.pathname,
     size: 200,
     background: 'white',
     foreground: 'black'
   });
 
-  function descargarQR() {
+  function descargarQRApp() {
     const enlace = document.createElement("a");
-    enlace.href = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-    enlace.download = "QR_NUEVEDIECISEIS.png";
+    enlace.href = canvasApp.toDataURL("image/png").replace("image/png", "image/octet-stream");
+    enlace.download = "QR_APP.png";
+    enlace.click();
+  }
+
+  // QR de la ficha técnica con nombre
+  const datosFicha = {
+    nombre: nombreEquipo.value || "equipo",
+    plantilla: plantilla.value,
+    inicio: inicioHoras
+  };
+  const hash = btoa(JSON.stringify(datosFicha));
+  const fichaURL = `${location.origin + location.pathname}?ficha=${hash}`;
+
+  const canvasFicha = document.getElementById("qr-ficha");
+  const qrFicha = new QRious({
+    element: canvasFicha,
+    value: fichaURL,
+    size: 200,
+    background: 'white',
+    foreground: 'black'
+  });
+
+  function descargarQRFicha() {
+    const enlace = document.createElement("a");
+    enlace.href = canvasFicha.toDataURL("image/png").replace("image/png", "image/octet-stream");
+    enlace.download = `QR_${nombreEquipo.value || "ficha"}.png`;
     enlace.click();
   }
 
@@ -115,32 +196,26 @@
     enlace.click();
   }
 
+  // Cargar planilla desde QR si existe
+  const params = new URLSearchParams(location.search);
+  const hashFicha = params.get("ficha");
+  if (hashFicha) {
+    try {
+      const datos = JSON.parse(atob(hashFicha));
+      plantilla.value = datos.plantilla;
+      nombreEquipo.value = datos.nombre;
+      localStorage.setItem("plantilla", datos.plantilla);
+      localStorage.setItem("inicioHoras", datos.inicio);
+      localStorage.setItem("nombreEquipo", datos.nombre);
+      location.href = location.origin + location.pathname; // Reinicia vista limpia
+    } catch (e) {
+      alert("⚠️ Error al cargar la ficha técnica");
+    }
+  }
+
   setInterval(() => {
     document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
   }, 1000);
-
-  function verificarHoras() {
-    const horaMaquina = parseFloat(document.getElementById("horaMaquina").value);
-    const horaActual = parseFloat(document.getElementById("horaActual").value);
-    const total = horaMaquina + horaActual;
-    const alerta = document.getElementById("alerta");
-
-    alerta.innerHTML = "";
-    alerta.className = "alerta";
-
-    if (total >= 250 && total < 300) {
-      alerta.innerText = "⚠️ MOTOR (250h)";
-      alerta.classList.add("verde");
-    } else if (total >= 1000 && total < 1050) {
-      alerta.innerText = "⚠️ TRANSMISIÓN (1000h)";
-      alerta.classList.add("amarillo");
-    } else if (total >= 2000 && total < 2050) {
-      alerta.innerText = "⚠️ HIDRÁULICO (2000h)";
-      alerta.classList.add("rojo");
-    } else {
-      alerta.className = "";
-    }
-  }
 </script>
 
 </body>

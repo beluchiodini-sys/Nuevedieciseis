@@ -6,282 +6,80 @@
   <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
-    h2 { display: flex; justify-content: space-between; }
-    table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 0 5px #ccc; }
-    th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: center; }
-    input, select, textarea { width: 90%; padding: 6px; margin-top: 4px; }
-    button { padding: 6px 12px; margin: 5px; cursor: pointer; }
-    canvas { margin-top: 5px; }
-    .carpeta { margin-top: 20px; padding: 15px; background: #eef; border-radius: 8px; }
-    .cronometro { font-weight: bold; color: #007700; font-size: 1.1em; }
-    .editable-area { width: 100%; height: 500px; white-space: pre-wrap; background: #fff; border: 1px solid #ccc; padding: 10px; font-family: monospace; margin-top: 10px; }
-    .formulario-inicial { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-    .formulario-inicial label { font-weight: bold; display: block; margin-bottom: 4px; }
-    .formulario-inicial input { width: 100%; padding: 6px; }
+    h2 { display: flex; justify-content: space-between; align-items: center; }
+    canvas { margin-top: 10px; }
+    pre { white-space: pre-wrap; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 5px #ccc; }
+    button { padding: 10px 20px; margin-top: 10px; display: block; }
+    .qr-container { margin: 20px 0; }
   </style>
 </head>
 <body>
 
-  <h2>NUEVEDIECISEIS <span id="reloj">⏱</span></h2>
+<h2>
+  NUEVEDIECISEIS
+  <span id="reloj">⏱</span>
+</h2>
 
-  <div class="formulario-inicial">
-    <div><label>EMPRESA:</label><input id="empresa" type="text" /></div>
-    <div></div>
-    <div><label>EQUIPO:</label><input id="equipo" type="text" /></div>
-    <div><label>INTERNO:</label><input id="interno" type="text" /></div>
-    <div><label>MARCA MODELO:</label><input id="modelo" type="text" /></div>
-    <div><label>PATENTE:</label><input id="patente" type="text" /></div>
-    <div><label>HORAS/KM:</label><input id="horas" type="text" /></div>
-    <div><label>N. DE SERIE:</label><input id="serie" type="text" /></div>
-    <div>
-      <label>SERVICIO:</label>
-      <select id="servicio">
-        <option>Motor</option>
-        <option>Transmisión</option>
-        <option>Hidráulico</option>
-        <option>Otro</option>
-      </select>
-    </div>
-    <div>
-      <label>&nbsp;</label>
-      <button onclick="crearCarpetaDesdeFormulario()">Crear Carpeta</button>
-    </div>
-  </div>
+<div class="qr-container">
+  <canvas id="qr"></canvas>
+  <button onclick="descargarQR()">📥 Descargar QR</button>
+</div>
 
-  <div id="carpetas"></div>
+<pre id="plantilla"></pre>
 
-  <script>
-    const carpetas = {};
-    const cronometrosActivos = {};
+<script>
+  const plantillaTecnica = `RIGA 4742 ESTACION FLORES CORDOBA
 
-    const fichaOriginal = `PLANILLA TÉCNICA
+CP. :5000
+TEL. 3517726146
+CRISTIAN TABORDA@NUEVEDIECISEIS.COM.AR
 
-EMPRESA:
-EQUIPO:										INTERNO:
-MARCA MODELO:									PATENTE:
-HORAS/KM:
-N. DE SERIE:
+PLANILLA TÉCNICA
+
+EMPRESA: NUEVEDIECISEIS
+EQUIPO: EXCAVADORA 329D    INTERNO: 14
+MARCA MODELO: CATERPILLAR 329D     PATENTE: AE572QK
+HORAS/KM: 10894
+N. DE SERIE: CAT0329DVTAH01453
 
 MOTOR
 ITEM	DESCRIPCIÓN	MARCA/MODELO	CANTIDAD
-1	ACEITE			
-2	FILTRO ACEITE			
-3	FILTRO COMBUSTIBLE			
-4	FILTRO COMBUSTIBLE			
-5	FILTRO DE AIRE			
-6	FILTRO DE AIRE			
-7	CORREAS			
-8	REFRIGERANTE			
-9				
-10				
+1	ACEITE	CAT	20 LTS
+2	FILTRO ACEITE	CAT	1
+3	FILTRO COMBUSTIBLE	CAT	2
+4	FILTRO DE AIRE	CAT	2
+5	CORREAS	CAT	1
+6	REFRIGERANTE	SHELL	20 LTS
 
-TRANSMISIÓN
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
+... (agregá más ítems si querés) ...
 
-HIDRÁULICO
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
+FIN DE PLANILLA`;
 
-NEUMÁTICO
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
+  // Mostrar plantilla
+  document.getElementById("plantilla").textContent = plantillaTecnica;
 
-ELÉCTRICO
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
+  // Generar QR al iniciar
+  const url = location.href;
+  new QRious({
+    element: document.getElementById("qr"),
+    value: url,
+    size: 150,
+  });
 
-TREN RODANTE
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
+  // Descargar QR
+  function descargarQR() {
+    const canvas = document.getElementById("qr");
+    const enlace = document.createElement("a");
+    enlace.href = canvas.toDataURL("image/png");
+    enlace.download = "QR_NUEVEDIECISEIS.png";
+    enlace.click();
+  }
 
-ELEMENTOS DE DESGASTE
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
+  // Reloj
+  setInterval(() => {
+    document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
+  }, 1000);
+</script>
 
-CABINA
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
-
-CHASIS
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				
-
-VARIOS
-1				
-2				
-3				
-4				
-5				
-6				
-7				
-8				
-9				
-10				`;
-
-    function crearCarpetaDesdeFormulario() {
-      const equipo = document.getElementById('equipo').value;
-      const interno = document.getElementById('interno').value;
-      const modelo = document.getElementById('modelo').value;
-      const base = document.getElementById('patente').value;
-      const horas = document.getElementById('horas').value;
-      const serie = document.getElementById('serie').value;
-      const empresa = document.getElementById('empresa').value;
-      const tipoServicio = document.getElementById('servicio').value;
-      const id = `carpeta_${base}_${Date.now()}`;
-      const creado = Date.now();
-
-      carpetas[id] = {
-        empresa,
-        equipo,
-        interno,
-        modelo,
-        base,
-        horasBase: horas,
-        serie,
-        servicio: tipoServicio,
-        creado,
-        acciones: [],
-        fichaEditable: fichaOriginal
-      };
-
-      localStorage.setItem(id, JSON.stringify(carpetas[id]));
-      mostrarCarpeta(id);
-    }
-
-    function mostrarCarpeta(id) {
-      const url = location.href.split("#")[0] + `#${encodeURIComponent(id)}`;
-      const datos = carpetas[id];
-      document.title = datos.equipo;
-      const div = document.createElement("div");
-      div.className = "carpeta";
-      div.innerHTML = `
-        <h3>📁 Carpeta: ${datos.equipo}</h3>
-        <canvas id="qr_${id}" width="100" height="100"></canvas>
-        <p><strong>EMPRESA:</strong> ${datos.empresa}</p>
-        <p><strong>EQUIPO:</strong> ${datos.equipo}</p>
-        <p><strong>INTERNO:</strong> ${datos.interno}</p>
-        <p><strong>MARCA MODELO:</strong> ${datos.modelo}</p>
-        <p><strong>PATENTE (N° BASE):</strong> ${datos.base}</p>
-        <p><strong>HORAS/KM:</strong> ${datos.horasBase}</p>
-        <p><strong>N. DE SERIE:</strong> ${datos.serie}</p>
-        <p><strong>SERVICIO:</strong> ${datos.servicio}</p>
-        <p><strong>TIEMPO ACTUAL:</strong> <span id="cron_${id}" class="cronometro">00:00:00</span></p>
-        <textarea id="ficha_${id}" class="editable-area" onchange="guardarFicha('${id}')">${datos.fichaEditable}</textarea>
-        <button onclick="descargarQR('${id}')">📷 Descargar QR</button>
-        <button onclick="eliminarCarpeta('${id}')">🗑️ Eliminar carpeta</button>
-      `;
-      new QRious({ element: document.getElementById(`qr_${id}`), value: url, size: 100 });
-      document.getElementById("carpetas").appendChild(div);
-      iniciarCronometro(id, datos.creado);
-    }
-
-    function guardarFicha(id) {
-      const area = document.getElementById(`ficha_${id}`);
-      if (area) {
-        carpetas[id].fichaEditable = area.value;
-        localStorage.setItem(id, JSON.stringify(carpetas[id]));
-      }
-    }
-
-    function iniciarCronometro(id, inicio) {
-      if (cronometrosActivos[id]) clearInterval(cronometrosActivos[id]);
-      const cronEl = document.getElementById(`cron_${id}`);
-      if (!cronEl) return;
-      cronometrosActivos[id] = setInterval(() => {
-        const delta = Math.floor((Date.now() - inicio) / 1000);
-        const hh = String(Math.floor(delta / 3600)).padStart(2, '0');
-        const mm = String(Math.floor((delta % 3600) / 60)).padStart(2, '0');
-        const ss = String(delta % 60).padStart(2, '0');
-        cronEl.textContent = `${hh}:${mm}:${ss}`;
-      }, 1000);
-    }
-
-    function descargarQR(id) {
-      const canvas = document.getElementById(`qr_${id}`);
-      if (!canvas) return;
-      const enlace = document.createElement("a");
-      enlace.href = canvas.toDataURL("image/png");
-      enlace.download = `${carpetas[id].equipo}_QR.png`;
-      enlace.click();
-    }
-
-    function eliminarCarpeta(id) {
-      localStorage.removeItem(id);
-      delete carpetas[id];
-      const divs = document.querySelectorAll(".carpeta");
-      divs.forEach(div => {
-        if (div.innerHTML.includes(id)) div.remove();
-      });
-    }
-
-    setInterval(() => {
-      document.getElementById("reloj").textContent = "⏱ " + new Date().toLocaleTimeString();
-    }, 1000);
-  </script>
 </body>
 </html>
